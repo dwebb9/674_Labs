@@ -101,7 +101,7 @@ class MavDynamics:
         n = forces_moments.item(5)
 
         # position kinematics
-        pos_dot = 
+        pos_dot = Quaternion2Rotation() #used in his code? See function in tools folder
         north_dot = 
         east_dot = 
         down_dot = 
