@@ -101,21 +101,21 @@ class MavDynamics:
         n = forces_moments.item(5)
 
         # position kinematics
-        pos_dot = 
-        north_dot = 
-        east_dot = 
-        down_dot = 
+        pos_dot = Quaternion2Rotation() #included in his slides... not sure what used for. 
+        north_dot = u*(e1^2 + e0^2 - e2^2 - e3^2) + v*2*(e1*e2 - e3*e0) + w*2*(e1*e3 + e2*e0)
+        east_dot = u*2*(e1*e2 + e3*e0) +  v*(e2^2 + e0^2 - e1^2 - e3^2) + w*2*(e2*e3 - e1*e0)
+        down_dot = u*2*(e1*e3 - e2*e0) + v*2*(e2*e3 + e1*e0) + w*(e3^2 + e0^2 - e1^2 - e2^2)
 
         # position dynamics
-        u_dot = 
-        v_dot = 
-        w_dot = 
+        u_dot = r*v - q*w + fx/m
+        v_dot = q*w - r*u + fy/m
+        w_dot = q*u - p*v + fz/m
 
         # rotational kinematics
-        e0_dot = 
-        e1_dot = 
-        e2_dot = 
-        e3_dot = 
+        e0_dot = (-e1*p - e2*q - e3*r)/2
+        e1_dot = (e0*p + e2*r - e3*q)/2
+        e2_dot = (e0*q - e1*r + e3*p)/2
+        e3_dot = (e0*r + e1*q - e2*p)/2
 
         # rotatonal dynamics
         p_dot = 
