@@ -121,26 +121,26 @@ class MavDynamics:
         n = forces_moments.item(5)
 
         # position kinematics
-        pos_dot = 
-        north_dot = 
-        east_dot = 
-        down_dot = 
+        pos_dot = Quaternion2Rotation(self._state[6:10]) 
+        north_dot = u*(e1**2 + e0**2 - e2**2 - e3**2) + v*2*(e1*e2 - e3*e0) + w*2*(e1*e3 + e2*e0)
+        east_dot = u*2*(e1*e2 + e3*e0) +  v*(e2**2 + e0**2 - e1**2 - e3**2) + w*2*(e2*e3 - e1*e0)
+        down_dot = u*2*(e1*e3 - e2*e0) + v*2*(e2*e3 + e1*e0) + w*(e3**2 + e0**2 - e1**2 - e2**2)
 
         # position dynamics
-        u_dot = 
-        v_dot = 
-        w_dot = 
+        u_dot = r*v - q*w + fx/MAV.mass
+        v_dot = q*w - r*u + fy/MAV.mass
+        w_dot = q*u - p*v + fz/MAV.mass
 
         # rotational kinematics
-        e0_dot = 
-        e1_dot = 
-        e2_dot = 
-        e3_dot = 
+        e0_dot = (-e1*p - e2*q - e3*r)/2
+        e1_dot = (e0*p + e2*r - e3*q)/2
+        e2_dot = (e0*q - e1*r + e3*p)/2
+        e3_dot = (e0*r + e1*q - e2*p)/2
 
         # rotational dynamics
-        p_dot = 
-        q_dot = 
-        r_dot = 
+        p_dot = MAV.gamma1*p*q - MAV.gamma2*q*r + MAV.gamma3*l + MAV.gamma4*n
+        q_dot = MAV.gamma5*p*r - MAV.gamma6*(p**2 - r**2) + m/MAV.Jy
+        r_dot = MAV.gamma7*p*q - MAV.gamma1*q*r + MAV.gamma4*l + MAV.gamma8*n
 
         # collect the derivative of the states
         x_dot = np.array([[north_dot, east_dot, down_dot, u_dot, v_dot, w_dot,
