@@ -7,6 +7,8 @@ import sys
 sys.path.append('..')
 from tools.transfer_function import transferFunction
 import numpy as np
+import parameters.aerosonde_parameters as MAV
+
 
 
 class WindSimulation:
@@ -16,24 +18,29 @@ class WindSimulation:
         #self._steady_state = np.array([[0., 5., 0.]]).T
 
         #   Dryden gust model parameters (section 4.4 UAV book)
-        Va =  # must set Va to a constant value
-        Lu = 
-        Lv = 
-        Lw = 
+
+        Va = 25 # must set Va to a constant value 
+        Lu = MAV.Lu[MAV.windIntensity]
+        Lv = MAV.Lv[MAV.windIntensity]
+        Lw = MAV.Lw[MAV.windIntensity]
         gust_flag = True
         if gust_flag==True:
-            sigma_u = 
-            sigma_v = 
-            sigma_w = 
+            sigma_u = MAV.sigu[MAV.windIntensity]
+            sigma_v = MAV.sigu[MAV.windIntensity]
+            sigma_w = MAV.sigu[MAV.windIntensity]
         else:
-            sigma_u = 
-            sigma_v = 
-            sigma_w = 
+            sigma_u = 0
+            sigma_v = 0
+            sigma_w = 0
 
         # Dryden transfer functions (section 4.4 UAV book)
-        self.u_w = #transferFunction(num=np.array([[___]]), den=np.array([[___]]),Ts=__)
-        self.v_w = #transferFunction(num=np.array([[___]]), den=np.array([[___]]),Ts=__)
-        self.w_w = #transferFunction(num=np.array([[___]]), den=np.array([[___]]),Ts=__)
+        hu_coeff = sigma_u*np.sqrt(2*Va/Lu)
+        hv_coeff = sigma_v*np.sqrt(3*Va/Lv)
+        hw_coeff = sigma_w*np.sqrt(3*Va/Lw)
+
+        self.u_w = transferFunction(num=np.array([[0, 0, hu_coeff]]), den=np.array([[0, 1, Va/Lu]]),Ts=Ts)
+        self.v_w = transferFunction(num=np.array([[0, hv_coeff, hv_coeff*Va/(np.sqrt(3)*Lv)]]), den=np.array([[1, 2*Va/Lv, (Va/Lv)**2]]),Ts=Ts)
+        self.w_w = transferFunction(num=np.array([[0, hw_coeff, hw_coeff*Va/(np.sqrt(3)*Lw)]]), den=np.array([[1, 2*Va/Lw, (Va/Lw)**2]]),Ts=Ts)
         self._Ts = Ts
 
     def update(self):
