@@ -10,7 +10,7 @@ from tools.rotations import Euler2Quaternion
 north0 = 0.  # initial north position
 east0 = 0.  # initial east position
 down0 = -100.0  # initial down position
-u0 = 0.  # initial velocity along body x-axis
+u0 = 10.  # initial velocity along body x-axis
 v0 = 0.  # initial velocity along body y-axis
 w0 = 0.  # initial velocity along body z-axis
 phi0 = 0.  # initial roll angle
@@ -118,13 +118,13 @@ C_T0 = 0.09357
 ######################################################################################
 windIntensity = 0
 
-alt = np.array(4)
-Lu = np.array(4)
-Lv = np.array(4)
-Lw = np.array(4)
-sigu = np.array(4)
-sigv = np.array(4)
-sigw = np.array(4)
+alt = np.zeros(4)
+Lu = np.zeros(4)
+Lv = np.zeros(4)
+Lw = np.zeros(4)
+sigu = np.zeros(4)
+sigv = np.zeros(4)
+sigw = np.zeros(4)
 
 alt[0] = 50
 alt[1] = 50

@@ -187,7 +187,7 @@ class MavDynamics:
         phi, theta, psi = Quaternion2Euler(self._state[6:10])
 
         # compute gravitaional forces
-        f_g = [-MAV.mass*MAV.gravity*np.sin(theta), MAV.mass*MAV.gravity*np.cos(theta)*np.sin(phi), MAV.mass*MAV.gravity*cos(theta)*cos(phi)]
+        f_g = [-MAV.mass*MAV.gravity*np.sin(theta), MAV.mass*MAV.gravity*np.cos(theta)*np.sin(phi), MAV.mass*MAV.gravity*np.cos(theta)*np.cos(phi)]
 
         # compute Lift and Drag coefficients
         CL = MAV.C_L_0 + MAV.C_L_alpha*self._alpha
@@ -208,10 +208,10 @@ class MavDynamics:
         fy = f_g[1] + Y_stability
 
         # compute logitudinal torque in body frame
-        My = 
+        My = 0.5*MAV.rho*self._Va**2*MAV.S_wing*(MAV.c*(MAV.C_m_0 + MAV.C_m_alpha*self._alpha + MAV.C_m_q*MAV.c*q/(2*self._Va) + MAV.C_m_delta_e*delta[0]))
         # compute lateral torques in body frame
-        Mx = 
-        Mz = 
+        Mx = 0.5*MAV.rho*self._Va**2*MAV.S_wing*(MAV.b*(MAV.C_ell_0 + MAV.C_ell_beta*self._beta + MAV.C_ell_p*MAV.b*p/(2*self._Va) + MAV.C_ell_r*MAV.b*r/(2*self._Va) + MAV.C_ell_delta_a*delta[1] + MAV.C_ell_delta_r*delta[2])) + torque_prop
+        Mz = 0.5*MAV.rho*self._Va**2*MAV.S_wing*(MAV.b*(MAV.C_n_0 + MAV.C_n_beta*self._beta + MAV.C_n_p*MAV.b*p/(2*self._Va) + MAV.C_n_r*MAV.b*r/(2*self._Va) + MAV.C_n_delta_a*delta[1] + MAV.C_n_delta_r*delta[2]))
 
         self._forces[0] = fx
         self._forces[1] = fy
