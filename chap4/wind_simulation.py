@@ -38,7 +38,7 @@ class WindSimulation:
         hv_coeff = sigma_v*np.sqrt(3*Va/Lv)
         hw_coeff = sigma_w*np.sqrt(3*Va/Lw)
 
-        self.u_w = transferFunction(num=np.array([[0, 0, hu_coeff]]), den=np.array([[0, 1, Va/Lu]]),Ts=Ts)
+        self.u_w = transferFunction(num=np.array([[0, hu_coeff]]), den=np.array([[1, Va/Lu]]),Ts=Ts)
         self.v_w = transferFunction(num=np.array([[0, hv_coeff, hv_coeff*Va/(np.sqrt(3)*Lv)]]), den=np.array([[1, 2*Va/Lv, (Va/Lv)**2]]),Ts=Ts)
         self.w_w = transferFunction(num=np.array([[0, hw_coeff, hw_coeff*Va/(np.sqrt(3)*Lw)]]), den=np.array([[1, 2*Va/Lw, (Va/Lw)**2]]),Ts=Ts)
         self._Ts = Ts

@@ -13,6 +13,9 @@ import pyqtgraph as pg
 import pyqtgraph.opengl as gl
 import pyqtgraph.Vector as Vector
 from chap2.draw_mav import DrawMav
+import PyQt5
+def handler(msg_type, msg_log_context, msg_string):
+    pass
 
 
 class MavViewer():

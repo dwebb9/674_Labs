@@ -39,10 +39,10 @@ plot_time = sim_time
 print("Press Command-Q to exit...")
 while sim_time < SIM.end_time:
     # -------set control surfaces-------------
-    delta.elevator = -0.2
-    delta.aileron = 0.0
-    delta.rudder = 0.005
-    delta.throttle = 0.5
+    delta.elevator = -0.1248
+    delta.aileron = 0.0018
+    delta.rudder = -0.0003
+    delta.throttle = 0.68
     # transpose to make it a column vector
 
     # -------physical system-------------
