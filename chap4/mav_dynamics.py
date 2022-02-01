@@ -86,17 +86,10 @@ class MavDynamics:
         self._state[9][0] = self._state.item(9)/normE
 
         # update the airspeed, angle of attack, and side slip angles using new state
-
-        # print("before update velocity")
-        # print(self._Va)
         self._update_velocity_data(wind) # CAUSING ISSUES??????????????????????????????????? 
-        # print("After update velocity")
-        # print(self._Va)
         # update the message class for the true state
         self._update_true_state()
-        print("after update true state")
-        print(self.true_state.north)
-        print(self.true_state.east)
+
 
     def external_set_state(self, new_state):
         self._state = new_state
@@ -172,13 +165,13 @@ class MavDynamics:
         self._Va = np.linalg.norm(v_air) 
         # compute angle of attack
         if ur == 0:
-            print("ur == 0")
+            # print("ur == 0")
             self._alpha = np.array([np.pi/2])
         else:
             self._alpha = np.arctan2(wr, ur)
         # compute sideslip angle
         if self._Va == 0:
-            print("Va == 0")
+            # print("Va == 0")
             self._beta =  np.array([np.pi/2])
         else:
             self._beta = np.arcsin(vr/self._Va)
@@ -194,10 +187,17 @@ class MavDynamics:
         q = self._state.item(11)
         r = self._state.item(12)
 
+        e0 = self._state.item(6)
+        e1 = self._state.item(7)
+        e2 = self._state.item(8)
+        e3 = self._state.item(9)
+
         phi, theta, psi = Quaternion2Euler(self._state[6:10])
 
         # compute gravitaional forces
-        f_g = [-MAV.mass*MAV.gravity*np.sin(theta), MAV.mass*MAV.gravity*np.cos(theta)*np.sin(phi), MAV.mass*MAV.gravity*np.cos(theta)*np.cos(phi)]
+        # f_g = [-MAV.mass*MAV.gravity*np.sin(theta), MAV.mass*MAV.gravity*np.cos(theta)*np.sin(phi), MAV.mass*MAV.gravity*np.cos(theta)*np.cos(phi)]
+        f_g = [MAV.mass*MAV.gravity*2*(e1*e3 + e2*e0),MAV.mass*MAV.gravity*2*(e2*e3 + e1*e0),MAV.mass*MAV.gravity*(e3**2 + e0**2 - e1**2 - e2**2)]
+
 
         # compute Lift and Drag coefficients
         CL = MAV.C_L_0 + MAV.C_L_alpha*self._alpha
@@ -226,13 +226,16 @@ class MavDynamics:
         # fx = 10
         # fy = 0  # 10
         # fz = 0  # 10
-        # Mx = 0  # 0.1
-        # My = 0  # 0.1
-        # Mz = 0  # 0.1
+        # print(Mx)
+        # Mx = [0]  # 0.1
+        # My = [0]  # 0.1
+        # Mz = [0]  # 0.1
 
         self._forces[0] = fx
         self._forces[1] = fy
         self._forces[2] = fz
+
+        print(np.array([[fx, fy, fz, Mx, My, Mz]]).T)
         return np.array([[fx, fy, fz, Mx, My, Mz]]).T
 
     def _motor_thrust_torque(self, Va, delta_t):
