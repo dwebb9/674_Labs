@@ -1,0 +1,19 @@
+Vin = Vmax*delta t
+# Quadratic formula to solve for motor speed
+a = MAV. CQ0 * MAV. rho * np . power (MAV. D prop , 5) \
+/ ((2. * np . pi )* *2 )
+b = (MAV. CQ1 * MAV. rho * np . power (MAV. D prop , 4)
+/ (2. * np . pi ) ) * self . Va + KQ**2/MAV. R motor
+c = MAV. CQ2 * MAV. rho * np . power (MAV. D prop , 3) \
+* self . Va**2  (KQ / MAV. R motor ) * V ol t s + KQ * MAV. i 0
+# Consider only positive root
+Omega op = (b + np . s q r t (b**2  4*a* c)) / (2. * a )
+# compute advance rat io
+J op = 2 * np . pi * self . Va / (Omega op * MAV. D prop )
+# compute nond imens ional ized c o e f f i c i e n t s of thrus t and torque
+C T = MAV. C T2 * J op **2 + MAV. C T1 * J op + MAV. C T0
+C Q = MAV. C Q2 * J op **2 + MAV. C Q1 * J op + MAV. C Q0
+# add thrus t and torque due to pr o peller
+n = Omega op / (2 * np . pi )
+f x += MAV. rho * n**2 * np . power (MAV. D prop , 4) * C T
+Mx += MAV. rho * n**2 * np . power (MAV. D prop , 5) * C Q
