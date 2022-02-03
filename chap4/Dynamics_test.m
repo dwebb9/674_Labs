@@ -106,7 +106,7 @@ f_longz = -sin(alpha)*F_drag - cos(alpha)*F_lift;
 fg;
 thrust_prop;
 
-fx = fg(1) - thrust_prop + f_longx;
+fx = fg(1) + thrust_prop + f_longx;
 f_longx
 
 ideal_f_longx = 1.05613943 + 0.9564161283661252 

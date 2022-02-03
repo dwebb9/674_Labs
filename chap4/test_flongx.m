@@ -1,5 +1,7 @@
 clear, close all;
 
+pi_long = 3.141592653589793238462643383279;
+
 delta_elevator = -0.1248;
 delta_aileron = 0.001836;
 delta_rudder = - 0.0003026;
@@ -72,21 +74,23 @@ b_b =(1 + exp(-M*(alpha-alpha0)))*(1 + exp(M*(alpha+alpha0)));
 blend = (a_b)/(b_b);
 
 CL_nonlin = (1-blend)*(C_L_0 + C_L_alpha*alpha) + blend*(2*sign(alpha)*(sin(alpha)^2)*cos(alpha));
-CD_nonlin = C_D_p + ((C_L_0 + C_L_alpha*alpha)^2)/(pi*e*AR);
+CD_nonlin = ((C_L_0 + C_L_alpha*alpha)^2)/(pi*e*AR); % C_D_p = 0
 
-CL_lin = C_L_0 + C_L_alpha*alpha;
-CD_lin = C_D_0 + C_D_alpha*alpha;
-
-CL = CL_lin + C_L_q*c*q/(2*Va) + C_L_delta_e*delta_elevator;
-CD = CD_nonlin + C_D_q*c*q/(2*Va) + C_D_delta_e*delta_elevator;
+CL = CL_nonlin + C_L_q*c*q/(2*Va) + C_L_delta_e*delta_elevator;
+CD = CD_nonlin + C_D_delta_e*delta_elevator; %C_D_q*c*q/(2*Va) = 0
 
 
 Flift = 0.5*rho*(Va^2)*S_wing*CL;
-Fdrag = 0.5*rho*(Va^2)*S_wing*CD;
+Fdrag = 0.5*rho*(Va^2)*S_wing*CD
 
-f_longx = -cos(alpha)*Fdrag + sin(alpha)*Flift
+f_longx = -cos(alpha)*Fdrag + sin(alpha)*Flift;
 
-ideal_f_longx = 1.05613943 + 0.9564161283661252 
+ideal_f_longx = 1.05613943 - 0.9564161283661252
+
+f_x_test = -0.5*rho*(Va^2)*S_wing*CD;
+
+ideal_CD = ideal_f_longx/(-0.5*rho*(Va^2)*S_wing)
+CD = ((C_L_0 + C_L_alpha*alpha)^2)/(pi*e*AR) + C_D_delta_e*delta_elevator %C_D_q*c*q/(2*Va) = 0
 
 
 
