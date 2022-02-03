@@ -58,7 +58,7 @@ C_T2 = -0.1079;
 C_T1 = -0.06044;
 C_T0 = 0.09357;
 
-alpha = 0;
+alpha = 0.47;
 beta = 0;
 Va = 25;
 theta = 0;
@@ -84,13 +84,12 @@ thrust_prop = rho*(n^2)*(D_prop^4)*C_T
 torque_prop = -rho*(n^2)*(D_prop^5)*C_Q
 
 
-%Latteral Coefficients
+%Longitudianl Coefficients
 
 a_b = 1 + exp(-M*(alpha-alpha0)) + exp(M*(alpha+alpha0));
 b_b =(1 + exp(-M*(alpha-alpha0)))*(1 + exp(M*(alpha+alpha0)));
 
 blend = (a_b)/(b_b);
-
 
 CL = (1-blend)*(C_L_0 + C_L_alpha*alpha) + blend*(2*sign(alpha)*(sin(alpha)^2)*cos(alpha));
 CD = C_D_p + ((C_L_0 + C_L_alpha*alpha)^2)/(pi*e*AR);
@@ -100,18 +99,20 @@ fg = [-mass*g*sin(theta); mass*g*cos(theta)*sin(phi); mass*g*cos(theta)*cos(phi)
 F_lift = 0.5*rho*Va^2*S_wing*(CL + C_L_q*c*q/(2*Va) + C_L_delta_e*delta_elevator);
 F_drag =  0.5*rho*Va^2*S_wing*(CD + C_D_q*c*q/(2*Va) + C_D_delta_e*delta_elevator);
 
-f_long = [cos(alpha) -sin(alpha); sin(alpha) cos(alpha)]*[-F_drag; -F_lift];
+f_longx = -cos(alpha)*F_drag + sin(alpha)*F_lift;
+f_longz = -sin(alpha)*F_drag - cos(alpha)*F_lift;
+
 
 fg;
 thrust_prop;
-F_drag;
-F_lift;
-f_long;
 
-fx = fg(1) - thrust_prop + f_long(1);
+fx = fg(1) - thrust_prop + f_longx;
+f_longx
+
+ideal_f_longx = 1.05613943 + 0.9564161283661252 
 % should be 1.05613943e+00
 
-fz = fg(1) + f_long(2);
+fz = fg(3) + f_longz;
 %should be 6.13128445e+01
 
 

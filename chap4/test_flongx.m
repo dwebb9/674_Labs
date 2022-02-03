@@ -66,53 +66,27 @@ phi = 0;
 q = 0;
 r = 0;
 
-% Tourqe and Propulsion
-V_in = V_max*ts_simulation;
-
-a1 = (rho*C_Q0*D_prop^5)/(2*pi)^2;
-b1 = rho*C_Q1*(D_prop^4)*Va/(2*pi) + (KQ^2)/R_motor;
-c1 = rho*(D_prop^3)*C_Q2*(Va^2) - KQ*V_in/R_motor + KQ*i0;
-Omega_p = (-b1 + sqrt(b1^2 - 4*a1*c1))/(2*a1);
-
-J_op = 2*pi*Va/(Omega_p*D_prop);
-
-C_T = C_T2*J_op^2 + C_T1*J_op + C_T0;
-C_Q = C_Q2*J_op^2 + C_Q1*J_op + C_Q0;
-
-n = Omega_p/(2*pi);
-thrust_prop = rho*(n^2)*(D_prop^4)*C_T
-torque_prop = -rho*(n^2)*(D_prop^5)*C_Q
-
-
-%Longitudianl Coefficients
-
 a_b = 1 + exp(-M*(alpha-alpha0)) + exp(M*(alpha+alpha0));
 b_b =(1 + exp(-M*(alpha-alpha0)))*(1 + exp(M*(alpha+alpha0)));
 
 blend = (a_b)/(b_b);
 
-CL = (1-blend)*(C_L_0 + C_L_alpha*alpha) + blend*(2*sign(alpha)*(sin(alpha)^2)*cos(alpha));
-CD = C_D_p + ((C_L_0 + C_L_alpha*alpha)^2)/(pi*e*AR);
+CL_nonlin = (1-blend)*(C_L_0 + C_L_alpha*alpha) + blend*(2*sign(alpha)*(sin(alpha)^2)*cos(alpha));
+CD_nonlin = C_D_p + ((C_L_0 + C_L_alpha*alpha)^2)/(pi*e*AR);
 
-fg = [-mass*g*sin(theta); mass*g*cos(theta)*sin(phi); mass*g*cos(theta)*cos(phi)];
+CL_lin = C_L_0 + C_L_alpha*alpha;
+CD_lin = C_D_0 + C_D_alpha*alpha;
 
-F_lift = 0.5*rho*Va^2*S_wing*(CL + C_L_q*c*q/(2*Va) + C_L_delta_e*delta_elevator);
-F_drag =  0.5*rho*Va^2*S_wing*(CD + C_D_q*c*q/(2*Va) + C_D_delta_e*delta_elevator);
-
-f_longx = -cos(alpha)*F_drag + sin(alpha)*F_lift;
-f_longz = -sin(alpha)*F_drag - cos(alpha)*F_lift;
+CL = CL_lin + C_L_q*c*q/(2*Va) + C_L_delta_e*delta_elevator;
+CD = CD_nonlin + C_D_q*c*q/(2*Va) + C_D_delta_e*delta_elevator;
 
 
-fg
-thrust_prop
+Flift = 0.5*rho*(Va^2)*S_wing*CL;
+Fdrag = 0.5*rho*(Va^2)*S_wing*CD;
 
-fx = fg(1) - thrust_prop + f_longx;
-f_longx
+f_longx = -cos(alpha)*Fdrag + sin(alpha)*Flift
 
 ideal_f_longx = 1.05613943 + 0.9564161283661252 
-% should be 1.05613943e+00
 
-fz = fg(3) + f_longz;
-%should be 6.13128445e+01
 
 
