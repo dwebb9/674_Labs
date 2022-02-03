@@ -50,7 +50,7 @@ class MavDynamics:
         self._forces = np.array([[0.], [0.], [0.]])
         self._Va = MAV.u0
         self._alpha = [0]
-        self._beta = 0
+        self._beta = [0]
         # initialize true_state message
         self.true_state = MsgState()
 
@@ -72,8 +72,6 @@ class MavDynamics:
         k2 = self._derivatives(self._state + time_step/2.*k1, forces_moments)
         k3 = self._derivatives(self._state + time_step/2.*k2, forces_moments)
         k4 = self._derivatives(self._state + time_step*k3, forces_moments)
-
-        print("state", self._state)
         self._state += time_step/6 * (k1 + 2*k2 + 2*k3 + k4)
 
         # normalize the quaternion
@@ -208,43 +206,41 @@ class MavDynamics:
         f_g = [MAV.mass*MAV.gravity*2*(e1*e3 + e2*e0),MAV.mass*MAV.gravity*2*(e2*e3 + e1*e0),MAV.mass*MAV.gravity*(e3**2 + e0**2 - e1**2 - e2**2)]
 
         blend = self.blending(self._alpha)
-        # print(blend)
         # compute Lift and Drag coefficients
         alpha_sign = np.sign(self._alpha)
-        temp = MAV.C_L_0 + MAV.C_L_alpha*self._alpha[0]
         # print(type(temp))
-        CL = (1-blend)*(MAV.C_L_0 + MAV.C_L_alpha*self._alpha[0]) + blend*(2*alpha_sign*(np.sin(self._alpha)**2)*np.cos(self._alpha))
+        CL1 = (1-blend)*(MAV.C_L_0 + MAV.C_L_alpha*self._alpha[0])
+        CL2 = blend*(2*alpha_sign[0]*(np.sin(self._alpha[0])**2)*np.cos(self._alpha[0]))
+        CL = CL1 + CL2
         CD = MAV.C_D_p + ((MAV.C_L_0 + MAV.C_L_alpha*self._alpha[0])**2)/(np.pi*MAV.e*MAV.AR)
         # compute Lift and Drag Forces
         F_lift = 0.5*MAV.rho*self._Va**2*MAV.S_wing*(CL + MAV.C_L_q*MAV.c*q/(2*self._Va) + MAV.C_L_delta_e*delta.elevator)#4.6
         F_drag =  0.5*MAV.rho*self._Va**2*MAV.S_wing*(CD + MAV.C_D_q*MAV.c*q/(2*self._Va) + MAV.C_D_delta_e*delta.elevator) #4.7
 
-        # print("F_lift: ", F_lift)
-        # print("F_drag: ", F_drag)
         #compute propeller thrust and torque
         thrust_prop, torque_prop = self._motor_thrust_torque(self._Va, delta.throttle)
 
-        flongx = -np.cos(self._alpha)*F_drag + np.sin(self._alpha)*F_lift
-        flongz = -np.sin(self._alpha)*F_drag - np.cos(self._alpha)*F_lift
+        flongx = -np.cos(self._alpha[0])*F_drag + np.sin(self._alpha[0])*F_lift
+        flongz = -np.sin(self._alpha[0])*F_drag - np.cos(self._alpha[0])*F_lift
 
-
-        # print("thrust: ", thrust_prop)
-        # print("fg: ", f_g)
-        # print("flong: ", f_long)
         # compute longitudinal forces in body frame
         fx = f_g[0] - thrust_prop + flongx
         fz = f_g[2] + flongz
 
         # print("fx, fz" , [fx, fz])
         # # compute lateral forces in body frame
-        Y_stability = 0.5*MAV.rho*self._Va**2*MAV.S_wing*(MAV.C_Y_0 + MAV.C_Y_beta*self._beta + MAV.C_Y_p*MAV.b*p/(2*self._Va) + MAV.C_Y_r*MAV.b*r/(2*self._Va) + MAV.C_Y_delta_a*delta.aileron + MAV.C_Y_delta_r*delta.rudder)
+        Y_stability = 0.5*MAV.rho*self._Va**2*MAV.S_wing*(MAV.C_Y_0 + MAV.C_Y_beta*self._beta[0] + MAV.C_Y_p*MAV.b*p/(2*self._Va) + MAV.C_Y_r*MAV.b*r/(2*self._Va) + MAV.C_Y_delta_a*delta.aileron + MAV.C_Y_delta_r*delta.rudder)
+       
+        print("Y stability: ", Y_stability)
+        print("fg_y: ", f_g[1])
+       
         fy = f_g[1] + Y_stability
 
         # compute logitudinal torque in body frame
         My = 0.5*MAV.rho*self._Va**2*MAV.S_wing*(MAV.c*(MAV.C_m_0 + MAV.C_m_alpha*self._alpha[0] + MAV.C_m_q*MAV.c*q/(2*self._Va) + MAV.C_m_delta_e*delta.elevator))
         # compute lateral torques in body frame
-        Mx = 0.5*MAV.rho*self._Va**2*MAV.S_wing*(MAV.b*(MAV.C_ell_0 + MAV.C_ell_beta*self._beta + MAV.C_ell_p*MAV.b*p/(2*self._Va) + MAV.C_ell_r*MAV.b*r/(2*self._Va) + MAV.C_ell_delta_a*delta.aileron + MAV.C_ell_delta_r*delta.rudder)) + torque_prop
-        Mz = 0.5*MAV.rho*self._Va**2*MAV.S_wing*(MAV.b*(MAV.C_n_0 + MAV.C_n_beta*self._beta + MAV.C_n_p*MAV.b*p/(2*self._Va) + MAV.C_n_r*MAV.b*r/(2*self._Va) + MAV.C_n_delta_a*delta.aileron + MAV.C_n_delta_r*delta.rudder))
+        Mx = 0.5*MAV.rho*self._Va**2*MAV.S_wing*(MAV.b*(MAV.C_ell_0 + MAV.C_ell_beta*self._beta[0] + MAV.C_ell_p*MAV.b*p/(2*self._Va) + MAV.C_ell_r*MAV.b*r/(2*self._Va) + MAV.C_ell_delta_a*delta.aileron + MAV.C_ell_delta_r*delta.rudder)) + torque_prop
+        Mz = 0.5*MAV.rho*self._Va**2*MAV.S_wing*(MAV.b*(MAV.C_n_0 + MAV.C_n_beta*self._beta[0] + MAV.C_n_p*MAV.b*p/(2*self._Va) + MAV.C_n_r*MAV.b*r/(2*self._Va) + MAV.C_n_delta_a*delta.aileron + MAV.C_n_delta_r*delta.rudder))
 
         # fx = 10
         # fy = 0  # 10
@@ -258,7 +254,7 @@ class MavDynamics:
         self._forces[1] = fy
         self._forces[2] = fz
 
-        print(np.array([[fx, fy, fz, Mx, My, Mz]]).T)
+        print("forces: ", np.array([[fx, fy, fz, Mx, My, Mz]]).T)
         return np.array([[fx, fy, fz, Mx, My, Mz]]).T
 
     def _motor_thrust_torque(self, Va, delta_t):
