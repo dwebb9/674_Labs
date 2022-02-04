@@ -203,7 +203,11 @@ class MavDynamics:
         # print("e", [e0, e1, e2, e2])
         # print("[theta phi]", [theta, phi])
         # compute gravitaional forces
-        f_g = [MAV.mass*MAV.gravity*2*(e1*e3 + e2*e0),MAV.mass*MAV.gravity*2*(e2*e3 + e1*e0),MAV.mass*MAV.gravity*(e3**2 + e0**2 - e1**2 - e2**2)]
+        f_g_x = MAV.mass*MAV.gravity*2*(e1*e3 - e2*e0)
+        f_g_y = MAV.mass*MAV.gravity*2*(e2*e3 + e1*e0)
+        f_g_z = MAV.mass*MAV.gravity*(e3**2 + e0**2 - e1**2 - e2**2)
+
+        f_g = [f_g_x,f_g_y,f_g_z]
 
         blend = self.blending(self._alpha)
         # compute Lift and Drag coefficients
@@ -231,9 +235,6 @@ class MavDynamics:
         # # compute lateral forces in body frame
         Y_stability = 0.5*MAV.rho*self._Va**2*MAV.S_wing*(MAV.C_Y_0 + MAV.C_Y_beta*self._beta[0] + MAV.C_Y_p*MAV.b*p/(2*self._Va) + MAV.C_Y_r*MAV.b*r/(2*self._Va) + MAV.C_Y_delta_a*delta.aileron + MAV.C_Y_delta_r*delta.rudder)
        
-        print("Y stability: ", Y_stability)
-        print("fg_y: ", f_g[1])
-       
         fy = f_g[1] + Y_stability
 
         # compute logitudinal torque in body frame
@@ -254,7 +255,7 @@ class MavDynamics:
         self._forces[1] = fy
         self._forces[2] = fz
 
-        print("forces: ", np.array([[fx, fy, fz, Mx, My, Mz]]).T)
+        # print("forces: ", np.array([[fx, fy, fz, Mx, My, Mz]]).T)
         return np.array([[fx, fy, fz, Mx, My, Mz]]).T
 
     def _motor_thrust_torque(self, Va, delta_t):
