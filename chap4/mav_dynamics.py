@@ -204,7 +204,11 @@ class MavDynamics:
         # print("e", [e0, e1, e2, e2])
         # print("[theta phi]", [theta, phi])
         # compute gravitaional forces
-        f_g = [MAV.mass*MAV.gravity*2*(e1*e3 + e2*e0),MAV.mass*MAV.gravity*2*(e2*e3 + e1*e0),MAV.mass*MAV.gravity*(e3**2 + e0**2 - e1**2 - e2**2)]
+        f_g_x = MAV.mass*MAV.gravity*2*(e1*e3 - e2*e0)
+        f_g_y = MAV.mass*MAV.gravity*2*(e2*e3 + e1*e0)
+        f_g_z = MAV.mass*MAV.gravity*(e3**2 + e0**2 - e1**2 - e2**2)
+
+        f_g = [f_g_x,f_g_y,f_g_z]
 
         blend = self.blending(self._alpha)
         # compute Lift and Drag coefficients
