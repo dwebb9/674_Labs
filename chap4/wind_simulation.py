@@ -34,9 +34,9 @@ class WindSimulation:
             sigma_w = 0
 
         # Dryden transfer functions (section 4.4 UAV book)
-        hu_coeff = sigma_u*np.sqrt(2*Va/Lu)
-        hv_coeff = sigma_v*np.sqrt(3*Va/Lv)
-        hw_coeff = sigma_w*np.sqrt(3*Va/Lw)
+        hu_coeff = sigma_u*np.sqrt(2*Va/(np.pi*Lu))
+        hv_coeff = sigma_v*np.sqrt(3*Va/(np.pi*Lv))
+        hw_coeff = sigma_w*np.sqrt(3*Va/(np.pi*Lw))
 
         self.u_w = transferFunction(num=np.array([[0, hu_coeff]]), den=np.array([[1, Va/Lu]]),Ts=Ts)
         self.v_w = transferFunction(num=np.array([[0, hv_coeff, hv_coeff*Va/(np.sqrt(3)*Lv)]]), den=np.array([[1, 2*Va/Lv, (Va/Lv)**2]]),Ts=Ts)

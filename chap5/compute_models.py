@@ -93,16 +93,19 @@ def compute_tf_model(mav, trim_state, trim_input):
     phi, theta_trim, psi = Quaternion2Euler(trim_state[6:10])
 
     # define transfer function constants
-    a_phi1 = 
-    a_phi2 = 
-    a_theta1 = 
-    a_theta2 = 
-    a_theta3 = 
+    a_phi1 = -0.5*MAV.rho*(Va_trim**2)*MAV.S_wing*MAV.b*MAV.C_p_p*MAV.b/(2*Va_trim)
+    a_phi2 = -0.5*MAV.rho*(Va_trim**2)*MAV.S_wing*MAV.b*MAV.C_p_delta_a
+    a_theta1 = (-0.5*MAV.rho*(Va_trim**2)*MAV.c*MAV.S_wing/MAV.Jy)*MAV.C_m_q*MAV.c/(2*Va_trim)
+    a_theta2 = (-0.5*MAV.rho*(Va_trim**2)*MAV.c*MAV.S_wing/MAV.Jy)*MAV.C_m_alpha
+    a_theta3 = (-0.5*MAV.rho*(Va_trim**2)*MAV.c*MAV.S_wing/MAV.Jy)*MAV.C_m_delta_e
 
     # Compute transfer function coefficients using new propulsion model
-    a_V1 = 
-    a_V2 = 
-    a_V3 = 
+    dTpdVa = dT_dVa(mav, Va_trim, trim_input.throttle)
+    dTpdDeltaT = dT_ddelta_t(mav, Va_trim, trim_input.throttle)
+
+    a_V1 = (MAV.rho*Va_trim*MAV.S_wing/MAV.mass)*(MAV.C_D_0 + MAV.C_D_alpha*alpha_trim + MAV.C_D_delta_e*trim_input.elevator) + dTpdVa/MAV.mass
+    a_V2 = dTpdDeltaT/MAV.mass
+    a_V3 = MAV.gravity*np.cos(theta_trim - alpha_trim)
 
     return Va_trim, alpha_trim, theta_trim, a_phi1, a_phi2, a_theta1, a_theta2, a_theta3, a_V1, a_V2, a_V3
 

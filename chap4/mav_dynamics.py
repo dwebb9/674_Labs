@@ -152,8 +152,9 @@ class MavDynamics:
     def _update_velocity_data(self, wind=np.zeros((6,1))):
         steady_state = wind[0:3]
         gust = wind[3:6]
+        print("steady state", steady_state)
         # print(self._state[6:10])
-        rot = Quaternion2Rotation(self._state[6:10]).T 
+        rot = Quaternion2Rotation(self._state[6:10]).T
         # convert wind vector from world to body frame and add gust
         wind_body_frame = rot@steady_state + gust
         # velocity vector relative to the airmass
@@ -224,15 +225,12 @@ class MavDynamics:
         flongz = -np.sin(self._alpha[0])*F_drag - np.cos(self._alpha[0])*F_lift
 
         # compute longitudinal forces in body frame
-        fx = f_g[0] - thrust_prop + flongx
+        fx = f_g[0] + thrust_prop + flongx
         fz = f_g[2] + flongz
 
         # print("fx, fz" , [fx, fz])
         # # compute lateral forces in body frame
         Y_stability = 0.5*MAV.rho*self._Va**2*MAV.S_wing*(MAV.C_Y_0 + MAV.C_Y_beta*self._beta[0] + MAV.C_Y_p*MAV.b*p/(2*self._Va) + MAV.C_Y_r*MAV.b*r/(2*self._Va) + MAV.C_Y_delta_a*delta.aileron + MAV.C_Y_delta_r*delta.rudder)
-       
-        print("Y stability: ", Y_stability)
-        print("fg_y: ", f_g[1])
        
         fy = f_g[1] + Y_stability
 
@@ -254,7 +252,8 @@ class MavDynamics:
         self._forces[1] = fy
         self._forces[2] = fz
 
-        print("forces: ", np.array([[fx, fy, fz, Mx, My, Mz]]).T)
+        print(np.array([[fx, fy, fz, Mx, My, Mz]]).T)
+        print("/")
         return np.array([[fx, fy, fz, Mx, My, Mz]]).T
 
     def _motor_thrust_torque(self, Va, delta_t):

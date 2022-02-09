@@ -14,22 +14,27 @@ from message_types.msg_delta import MsgDelta
 def compute_trim(mav, Va, gamma):
     # define initial state and input
     e0 = Euler2Quaternion(0., gamma, 0.)
-    state0 = np.array([[],  # pn
-                   [],  # pe
-                   [],  # pd
-                   [],  # u
-                   [],  # v
-                   [],  # w
-                   [],  # e0
-                   [],  # e1
-                   [],  # e2
-                   [],  # e3
-                   [],  # p
-                   [],  # q
-                   []   # r
+    state0 = np.array([[0],  # pn
+                   [0],  # pe
+                   [0],  # pd
+                   [0],  # u
+                   [0],  # v
+                   [0],  # w
+                   [0],  # e0
+                   [0],  # e1
+                   [0],  # e2
+                   [0],  # e3
+                   [0],  # p
+                   [0],  # q
+                   [0]   # r
                    ])
-    delta0 = #MsgDelta()
-    x0 = np.concatenate((state0, delta0.to_array()), axis=0)
+    delta0 = np.array([[0,0,0,0]]).T #MsgDelta()
+
+    # delta0.elevator = -0.1248
+    # delta0.aileron = 0.001836
+    # delta0.rudder = -0.0003026
+    # delta0.throttle = 0.6768
+    x0 = np.concatenate((state0, delta0), axis=0)
     # define equality constraints
     cons = ({'type': 'eq',
              'fun': lambda x: np.array([
@@ -70,5 +75,18 @@ def compute_trim(mav, Va, gamma):
 
 def trim_objective_fun(x, mav, Va, gamma):
     # objective function to be minimized
-    J = 
+    state = x[0:13]
+    delta = MsgDelta(elevator=x.item(13),
+    aileron=x.item(14),
+    rudder=x.item(15),
+    throttle=x.item(16))
+    desired_trim_state_dot = np.array([[0., 0., -Va*np.sin(gamma), 0.,
+                                        0., 0., 0., 0., 0., 0., 0., 0.,
+                                        0.]]).T
+    mav._state = state
+    mav._update_velocity_data()
+    forces_moments = mav._forces_moments(delta)
+    f = mav._derivatives(state, forces_moments)
+    tmp = desired_trim_state_dot - f
+    J = np.linalg.norm(tmp[2:13]**2.0)
     return J
