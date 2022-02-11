@@ -152,7 +152,7 @@ class MavDynamics:
     def _update_velocity_data(self, wind=np.zeros((6,1))):
         steady_state = wind[0:3]
         gust = wind[3:6]
-        print("steady state", steady_state)
+        # print("steady state", steady_state)
         # print(self._state[6:10])
         rot = Quaternion2Rotation(self._state[6:10]).T
         # convert wind vector from world to body frame and add gust
@@ -256,8 +256,8 @@ class MavDynamics:
         self._forces[1] = fy
         self._forces[2] = fz
 
-        print(np.array([[fx, fy, fz, Mx, My, Mz]]).T)
-        print("/")
+        # print(np.array([[fx, fy, fz, Mx, My, Mz]]).T)
+        # print("/")
         return np.array([[fx, fy, fz, Mx, My, Mz]]).T
 
     def _motor_thrust_torque(self, Va, delta_t):

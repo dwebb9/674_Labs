@@ -125,13 +125,43 @@ def compute_ss_model(mav, trim_state, trim_input):
 def euler_state(x_quat):
     # convert state x with attitude represented by quaternion
     # to x_euler with attitude represented by Euler angles
-    x_euler = 
+    phi, theta, psi = Quaternion2Euler(x_quat[6:10])
+    x_euler = np.array([0,0,0,0,0,0,0,0,0,0,0,0])
+    x_euler[0] = x_quat[0]
+    x_euler[1] = x_quat[1]
+    x_euler[2] = x_quat[2]
+    x_euler[3] = x_quat[3]
+    x_euler[4] = x_quat[4]
+    x_euler[5] = x_quat[5]
+    x_euler[6] = phi
+    x_euler[7] = theta
+    x_euler[8] = psi
+    x_euler[9] = x_quat[10]
+    x_euler[10] = x_quat[11]
+    x_euler[11] = x_quat[12]
+
     return x_euler
 
 def quaternion_state(x_euler):
     # convert state x_euler with attitude represented by Euler angles
     # to x_quat with attitude represented by quaternions
-    x_quat = 
+    euler = Euler2Quaternion(x_euler[6:9])
+
+    x_quat = np.array([0,0,0,0,0,0,0,0,0,0,0,0,0])
+    x_quat[0] = x_euler[0]
+    x_quat[1] = x_euler[1]
+    x_quat[2] = x_euler[2]
+    x_quat[3] = x_euler[3]
+    x_quat[4] = x_euler[4]
+    x_quat[5] = x_euler[5]
+    x_quat[6] = euler[0]
+    x_quat[7] = euler[1]
+    x_quat[8] = euler[2]
+    x_quat[9] = euler[3]
+    x_quat[10] = x_euler[9]
+    x_quat[11] = x_euler[10]
+    x_quat[12] = x_euler[11]
+
     return x_quat
 
 def f_euler(mav, x_euler, delta):
@@ -152,17 +182,17 @@ def df_du(mav, x_euler, delta):
     B = 
     return B
 
-
 def dT_dVa(mav, Va, delta_t):
     # returns the derivative of motor thrust with respect to Va
-    eps = 
-    T_eps, Q_eps = #mav._motor_thrust_torque()
-    T, Q = #mav._motor_thrust_torque()
+    eps = 0.001
+    T_eps, Q_eps = mav._motor_thrust_torque(Va + eps, delta_t)
+    T, Q = mav._motor_thrust_torque(Va, delta_t)
+    old_Va = Va
     return (T_eps - T) / eps
 
 def dT_ddelta_t(mav, Va, delta_t):
     # returns the derivative of motor thrust with respect to delta_t
-    eps = 
-    T_eps, Q_eps = #mav._motor_thrust_torque()
-    T, Q = #mav._motor_thrust_torque()
+    eps = 0.001
+    T_eps, Q_eps = mav._motor_thrust_torque(Va, delta_t + eps)
+    T, Q = mav._motor_thrust_torque(Va, delta_t)
     return (T_eps - T) / eps
