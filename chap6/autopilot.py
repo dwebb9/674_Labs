@@ -53,18 +53,21 @@ class Autopilot:
     def update(self, cmd, state):
 
         # lateral autopilot
-        chi_c = 
-        phi_c = 
-        delta_a = 
-        delta_r = 
+        chi_c = wrap (cmd.course_command, state.chi)
+        phi_c = self.saturate(
+            cmd.phi_feedforward + self.course_from_roll.update(chi_c , state.chi),
+            np.radians(30), np.radians(30))
+        delta_a = self.roll_from_aileron.update(phi_c, state.phi, state.p)
+        delta_r = self.yaw_damper.update(state.r)
 
         # longitudinal autopilot
         # saturate the altitude command
-        altitude_c = 
-        theta_c = 
-        delta_e = 
-        delta_t = 
-        delta_t =
+        altitude_c =  self.saturate(cmd.altitude_command ,
+            state.altitude - AP.altitude_zone, state.altitude + AP.altitude_zone )
+        theta_c = self.altitude_from_pitch.update(altitude_c, state.altitude)
+        delta_e = self.pitch_from_elevator.update(theta_c, state.theta, state.q)
+        delta_t = self.airspeed_from_throttle.update(cmd.airspeed_command ,state.Va)
+        delta_t = self.saturate(delta_t, 0.0 , 1.0)
 
         # construct output and commanded states
         delta = MsgDelta(elevator=delta_e,

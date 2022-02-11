@@ -1,9 +1,0 @@
-Parameters that will be tuned for better repsonses
-
-see slide 8
-omega_phi
-zeta_phi
-
-see slide 13
-W_x
-zeta_x
