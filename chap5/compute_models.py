@@ -167,8 +167,10 @@ def quaternion_state(x_euler):
 def f_euler(mav, x_euler, delta):
     # return 12x1 dynamics (as if state were Euler state)
     # compute f at euler_state
-    
-    f_euler_ = 
+    x_quat = quaternion_state(x_euler)
+    f_quat = mav._derivatives(x_quat, mav._forces_moments(delta))
+    dTe_dxq = np.iden
+    f_euler_ = f_quat
     return f_euler_
 
 def df_dx(mav, x_euler, delta):
