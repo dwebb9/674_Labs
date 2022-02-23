@@ -76,8 +76,10 @@ def Quaternion2Rotation(quaternion):
     R = np.array([[e1 ** 2.0 + e0 ** 2.0 - e2 ** 2.0 - e3 ** 2.0, 2.0 * (e1 * e2 - e3 * e0), 2.0 * (e1 * e3 + e2 * e0)],
                   [2.0 * (e1 * e2 + e3 * e0), e2 ** 2.0 + e0 ** 2.0 - e1 ** 2.0 - e3 ** 2.0, 2.0 * (e2 * e3 - e1 * e0)],
                   [2.0 * (e1 * e3 - e2 * e0), 2.0 * (e2 * e3 + e1 * e0), e3 ** 2.0 + e0 ** 2.0 - e1 ** 2.0 - e2 ** 2.0]])
+    # if linalg.det(R) != 0:
+    #     R = R/linalg.det(R)
+    # if linalg.det(R) != 0:
     R = R/linalg.det(R)
-
     return R
 
 def Rotation2Quaternion(R):

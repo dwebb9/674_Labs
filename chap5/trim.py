@@ -20,7 +20,7 @@ def compute_trim(mav, Va, gamma):
                    [0],  # u
                    [0],  # v
                    [0],  # w
-                   [0],  # e0
+                   [1],  # e0
                    [0],  # e1
                    [0],  # e2
                    [0],  # e3
@@ -28,13 +28,14 @@ def compute_trim(mav, Va, gamma):
                    [0],  # q
                    [0]   # r
                    ])
-    delta0 = np.array([[0,0,0,0]]).T #MsgDelta()
+    # delta0 = np.array([[0,0,0,0]]).T #MsgDelta()
+    delta0 = MsgDelta()
 
     # delta0.elevator = -0.1248
     # delta0.aileron = 0.001836
     # delta0.rudder = -0.0003026
     # delta0.throttle = 0.6768
-    x0 = np.concatenate((state0, delta0), axis=0)
+    x0 = np.concatenate((state0, delta0.to_array()), axis=0)
     # define equality constraints
     cons = ({'type': 'eq',
              'fun': lambda x: np.array([
@@ -69,13 +70,29 @@ def compute_trim(mav, Va, gamma):
                           rudder=res.x.item(15),
                           throttle=res.x.item(16))
     trim_input.print()
-    print('trim_state=', trim_state.T)
     return trim_state, trim_input
 
 
-def trim_objective_fun(x, mav, Va, gamma):
+
+############ SOURCE OF PROBLEM!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+def trim_objective_fun(x, mav, Va, gamma): 
     # objective function to be minimized
-    state = x[0:13]
+    state = np.array([[x[0]],  # pn
+                   [x[1]],  # pe
+                   [x[2]],  # pd
+                   [x[3]],  # u
+                   [x[4]],  # v
+                   [x[5]],  # w
+                   [x[6]],  # e0
+                   [x[7]],  # e1
+                   [x[8]],  # e2
+                   [x[9]],  # e3
+                   [x[10]],  # p
+                   [x[11]],  # q
+                   [x[12]]   # r
+                   ])
+    # print("trim state", state)
     delta = MsgDelta(elevator=x.item(13),
     aileron=x.item(14),
     rudder=x.item(15),

@@ -152,8 +152,6 @@ class MavDynamics:
     def _update_velocity_data(self, wind=np.zeros((6,1))):
         steady_state = wind[0:3]
         gust = wind[3:6]
-        # print("steady state", steady_state)
-        # print(self._state[6:10])
         rot = Quaternion2Rotation(self._state[6:10]).T
         # convert wind vector from world to body frame and add gust
         wind_body_frame = rot@steady_state + gust
