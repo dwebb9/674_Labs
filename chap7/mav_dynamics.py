@@ -104,6 +104,9 @@ class MavDynamics:
     def sensors(self, delta):
         "Return value of sensors on MAV: gyros, accels, absolute_pressure, dynamic_pressure, GPS"
         phi, theta, psi = Quaternion2Rotation(self._state[6:10]) 
+        fx = self._forces[0] 
+        fy = self._forces[1]
+        fz = self._forces[2]
         # pdot = self._derivatives(self._state, self._forces_moments(delta))
         u = self._state.item(3)
         v = self._state.item(4)
@@ -116,9 +119,9 @@ class MavDynamics:
         self._sensors.gyro_y = q + SENSOR.gyro_y_bias + np.random.normal(0,SENSOR.gyro_sigma)
         self._sensors.gyro_z = r + SENSOR.gyro_z_bias + np.random.normal(0,SENSOR.gyro_sigma)
         # simulate accelerometers(units of g)
-        self._sensors.accel_x = 
-        self._sensors.accel_y =
-        self._sensors.accel_z =
+        self._sensors.accel_x = fx/MAV.mass + MAV.gravity*np.sin(theta) +  np.random.normal(0,SENSOR.accel_sigma)
+        self._sensors.accel_y = fy/MAV.mass + MAV.gravity*np.sin(theta) +  np.random.normal(0,SENSOR.accel_sigma)
+        self._sensors.accel_z = fz/MAV.mass + MAV.gravity*np.sin(theta) +  np.random.normal(0,SENSOR.accel_sigma)
         # simulate magnetometers
         # magnetic field in provo has magnetic declination of 12.5 degrees
         # and magnetic inclination of 66 degrees
