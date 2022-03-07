@@ -101,9 +101,9 @@ class MavDynamics:
         # update the message class for the true state
         self._update_true_state()
 
-    def sensors(self, delta):
+    def sensors(self):
         "Return value of sensors on MAV: gyros, accels, absolute_pressure, dynamic_pressure, GPS"
-        phi, theta, psi = Quaternion2Rotation(self._state[6:10]) 
+        phi, theta, psi = Quaternion2Euler(self._state[6:10]) 
         fx = self._forces[0] 
         fy = self._forces[1]
         fz = self._forces[2]
@@ -118,10 +118,12 @@ class MavDynamics:
         self._sensors.gyro_x = p + SENSOR.gyro_x_bias + np.random.normal(0,SENSOR.gyro_sigma)
         self._sensors.gyro_y = q + SENSOR.gyro_y_bias + np.random.normal(0,SENSOR.gyro_sigma)
         self._sensors.gyro_z = r + SENSOR.gyro_z_bias + np.random.normal(0,SENSOR.gyro_sigma)
+
         # simulate accelerometers(units of g)
-        self._sensors.accel_x = fx/MAV.mass + MAV.gravity*np.sin(theta) +  np.random.normal(0,SENSOR.accel_sigma)
-        self._sensors.accel_y = fy/MAV.mass + MAV.gravity*np.sin(theta) +  np.random.normal(0,SENSOR.accel_sigma)
-        self._sensors.accel_z = fz/MAV.mass + MAV.gravity*np.sin(theta) +  np.random.normal(0,SENSOR.accel_sigma)
+        self._sensors.accel_x = fx[0]/MAV.mass + MAV.gravity*np.sin(theta) +  np.random.normal(0,SENSOR.accel_sigma)
+        self._sensors.accel_y = fy[0]/MAV.mass + MAV.gravity*np.sin(theta) +  np.random.normal(0,SENSOR.accel_sigma)
+        self._sensors.accel_z = fz[0]/MAV.mass + MAV.gravity*np.sin(theta) +  np.random.normal(0,SENSOR.accel_sigma)
+
         # simulate magnetometers
         # magnetic field in provo has magnetic declination of 12.5 degrees
         # and magnetic inclination of 66 degrees
@@ -131,25 +133,36 @@ class MavDynamics:
         R =  Euler2Rotation(phi, theta, psi) # body to inertial
         # magnetic field in body frame: unit vector
         mag_body = np.transpose(R)*mag_inertial
+        # print()
         self._sensors.mag_x = mag_body[0] + np.random.normal(0,SENSOR.mag_sigma)
         self._sensors.mag_y = mag_body[1] + np.random.normal(0,SENSOR.mag_sigma)
         self._sensors.mag_z = mag_body[2] + np.random.normal(0,SENSOR.mag_sigma)
+        # print("mag")
+        # print(self._sensors.mag_x)
+        # print(self._sensors.mag_y)
+        # print(self._sensors.mag_z)
+        
         # simulate pressure sensors
-        self._sensors.abs_pressure = MAV.rho*MAV.gravity*self._state.item(2) + np.random.normal(0,SENSOR.abs_pres_sigma)
+        self._sensors.abs_pressure = -MAV.rho*MAV.gravity*self._state.item(2) + np.random.normal(0,SENSOR.abs_pres_sigma)
         self._sensors.diff_pressure =  MAV.rho*(self._Va**2)/2 + np.random.normal(0,SENSOR.diff_pres_sigma)
         # simulate GPS sensor
+
         if self._t_gps >= SENSOR.ts_gps:
             self._gps_eta_n = np.exp(-SENSOR.gps_k*SENSOR.ts_gps)*self._gps_eta_n + np.random.normal(0,SENSOR.gps_n_sigma)
             self._gps_eta_e = np.exp(-SENSOR.gps_k*SENSOR.ts_gps)*self._gps_eta_e + np.random.normal(0,SENSOR.gps_e_sigma)
             self._gps_eta_h = np.exp(-SENSOR.gps_k*SENSOR.ts_gps)*self._gps_eta_h + np.random.normal(0,SENSOR.gps_h_sigma)
             self._sensors.gps_n = self._state.item(0) + self._gps_eta_n
             self._sensors.gps_e = self._state.item(1) + self._gps_eta_e
-            self._sensors.gps_h = self._state.item(2) + self._gps_eta_h
-            self._sensors.gps_Vg = 
-            self._sensors.gps_course = 
+            self._sensors.gps_h = -self._state.item(2) + self._gps_eta_h
+            Ve = self._Va*np.sin(psi) + self._wind.item(0)
+            Vn = self._Va*np.cos(psi) + self._wind.item(1)
+            self._sensors.gps_Vg = np.sqrt(Vn**2 + Ve**2)
+            self._sensors.gps_course = np.arctan2(Ve,Vn)
             self._t_gps = 0.
         else:
             self._t_gps += self._ts_simulation
+
+        
         return self._sensors
 
     def external_set_state(self, new_state):
@@ -313,17 +326,17 @@ class MavDynamics:
         rho = MAV.rho
         D_prop = MAV.D_prop
 
-        a1 = (rho*MAV.C_Q0*D_prop**5)/(2*pi)**2
-        b1 = rho*MAV.C_Q1*(D_prop**4)*Va/(2*pi) + (MAV.KQ**2)/MAV.R_motor
+        a1 = (rho*MAV.C_Q0*D_prop**5)/(2*np.pi)**2
+        b1 = rho*MAV.C_Q1*(D_prop**4)*Va/(2*np.pi) + (MAV.KQ**2)/MAV.R_motor
         c1 = rho*(D_prop**3)*MAV.C_Q2*(Va**2) - MAV.KQ*V_in/MAV.R_motor + MAV.KQ*MAV.i0
         Omega_p = (-b1 + np.sqrt(b1**2 - 4*a1*c1))/(2*a1)
 
-        J_op = 2*pi*Va/(Omega_p*D_prop)
+        J_op = 2*np.pi*Va/(Omega_p*D_prop)
 
         C_T = MAV.C_T2*J_op**2 + MAV.C_T1*J_op + MAV.C_T0
         C_Q = MAV.C_Q2*J_op**2 + MAV.C_Q1*J_op + MAV.C_Q0
 
-        n = Omega_p/(2*pi)
+        n = Omega_p/(2*np.pi)
         thrust_prop = rho*(n**2)*(D_prop**4)*C_T
         torque_prop = -rho*(n**2)*(D_prop**5)*C_Q
         return thrust_prop, torque_prop
