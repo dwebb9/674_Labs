@@ -15,18 +15,18 @@ def compute_trim(mav, Va, gamma):
     # define initial state and input
     e0 = Euler2Quaternion(0., gamma, 0.)
     state0 = np.array([[0],  # pn
-                   [0],  # pe
-                   [0],  # pd
-                   [0],  # u
-                   [0],  # v
-                   [0],  # w
-                   [1],  # e0
-                   [0],  # e1
-                   [0],  # e2
-                   [0],  # e3
-                   [0],  # p
-                   [0],  # q
-                   [0]   # r
+                   [0.0],  # pe
+                   [0.0],  # pd
+                   [Va],  # u
+                   [0.0],  # v
+                   [0.0],  # w
+                   [e0.item(0)],  # e0
+                   [0.0],  # e1
+                   [0.0],  # e2
+                   [0.0],  # e3
+                   [0.0],  # p
+                   [0.0],  # q
+                   [0.0]   # r
                    ])
     # delta0 = np.array([[0,0,0,0]]).T #MsgDelta()
     delta0 = MsgDelta()
@@ -103,6 +103,7 @@ def trim_objective_fun(x, mav, Va, gamma):
     mav._state = state
     mav._update_velocity_data()
     forces_moments = mav._forces_moments(delta)
+    # print("forces from trim: ", forces_moments)
     f = mav._derivatives(state, forces_moments)
     tmp = desired_trim_state_dot - f
     J = np.linalg.norm(tmp[2:13]**2.0)

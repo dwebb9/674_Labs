@@ -114,6 +114,8 @@ def compute_ss_model(mav, trim_state, trim_input):
     x_euler = euler_state(trim_state)
     A = f_euler(mav, x_euler, trim_input)
     B = 0
+    print("A: ", A)
+    print("B: ", B)
     # extract longitudinal states (u, w, q, theta, pd) and change pd to h
     A_lon = 0
     B_lon = 0
@@ -126,7 +128,7 @@ def euler_state(x_quat):
     # convert state x with attitude represented by quaternion
     # to x_euler with attitude represented by Euler angles
     phi, theta, psi = Quaternion2Euler(x_quat[6:10])
-    x_euler = np.array([0,0,0,0,0,0,0,0,0,0,0,0])
+    x_euler = np.array([0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0])
     x_euler[0] = x_quat[0]
     x_euler[1] = x_quat[1]
     x_euler[2] = x_quat[2]
@@ -150,7 +152,7 @@ def quaternion_state(x_euler):
     psi = x_euler[8]
     euler = Euler2Quaternion(phi, theta, psi)
 
-    x_quat = np.array([0,0,0,0,0,0,0,0,0,0,0,0,0])
+    x_quat = np.array([0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0])
     x_quat[0] = x_euler[0]
     x_quat[1] = x_euler[1]
     x_quat[2] = x_euler[2]
@@ -167,15 +169,23 @@ def quaternion_state(x_euler):
 
     return x_quat
 
-def dTe_dxq(x_euler):
+def dTe_dxq(x_euler): # quat values not saved to floats.....?
     eps = 0.001
     dTeDxq = np.eye(12, 13) 
     x_quat = quaternion_state(x_euler)
     quat = x_quat[6:10]
-    quat0 = [quat[0] + eps, quat[1], quat[2], quat[3]]
-    quat1 = [quat[0], quat[1] + eps, quat[2], quat[3]]
-    quat2 = [quat[0], quat[1], quat[2] + eps, quat[3]]
-    quat3 = [quat[0], quat[1], quat[2], quat[3] + eps]
+
+    quat0 = np.array(quat)
+    quat1 = np.array(quat)
+    quat2 = np.array(quat)
+    quat3 = np.array(quat)
+
+    quat0[0] = quat[0] + eps
+    quat1[1] = quat[1] + eps
+    quat2[2] = quat[2] + eps
+    quat3[3] = quat[3] + eps
+
+
     phi, theta, psi = Quaternion2Euler(quat)
     phi0, theta0, psi0 = Quaternion2Euler(quat0)
     phi1, theta1, psi1 = Quaternion2Euler(quat1)
@@ -190,16 +200,16 @@ def dTe_dxq(x_euler):
     dTeDxq[9] = np.array([0,0,0,0,0,0,0,0,0,0,1,0,0])
     dTeDxq[10] = np.array([0,0,0,0,0,0,0,0,0,0,0,1,0])
     dTeDxq[11] = np.array([0,0,0,0,0,0,0,0,0,0,0,0,1])
-
-    print("dTeDxq: ", dTeDxq)
     return dTeDxq
 
 def f_euler(mav, x_euler, delta):
     # return 12x1 dynamics (as if state were Euler state)
     # compute f at euler_state
-    print("started f_euler")
     x_quat = quaternion_state(x_euler)
+    print("x_quat: ", x_quat)
+    print("forces: ", mav._forces_moments(delta) )
     f_quat = mav._derivatives(x_quat, mav._forces_moments(delta))
+    print("f_quat: ", f_quat)
     dTeDxq = dTe_dxq(x_euler)
     f_euler_ = dTeDxq@f_quat
     return f_euler_
