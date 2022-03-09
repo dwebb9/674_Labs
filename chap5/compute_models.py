@@ -94,16 +94,19 @@ def compute_tf_model(mav, trim_state, trim_input):
 
     # define transfer function constants
     a_phi1 = -0.5*MAV.rho*(Va_trim**2)*MAV.S_wing*MAV.b*MAV.C_p_p*MAV.b/(2*Va_trim)
-    a_phi2 = -0.5*MAV.rho*(Va_trim**2)*MAV.S_wing*MAV.b*MAV.C_p_delta_a
+    a_phi2 = 0.5*MAV.rho*(Va_trim**2)*MAV.S_wing*MAV.b*MAV.C_p_delta_a
     a_theta1 = (-0.5*MAV.rho*(Va_trim**2)*MAV.c*MAV.S_wing/MAV.Jy)*MAV.C_m_q*MAV.c/(2*Va_trim)
     a_theta2 = (-0.5*MAV.rho*(Va_trim**2)*MAV.c*MAV.S_wing/MAV.Jy)*MAV.C_m_alpha
-    a_theta3 = (-0.5*MAV.rho*(Va_trim**2)*MAV.c*MAV.S_wing/MAV.Jy)*MAV.C_m_delta_e
+    a_theta3 = (0.5*MAV.rho*(Va_trim**2)*MAV.c*MAV.S_wing/MAV.Jy)*MAV.C_m_delta_e
 
     # Compute transfer function coefficients using new propulsion model
     dTpdVa = dT_dVa(mav, Va_trim, trim_input.throttle)
     dTpdDeltaT = dT_ddelta_t(mav, Va_trim, trim_input.throttle)
 
-    a_V1 = (MAV.rho*Va_trim*MAV.S_wing/MAV.mass)*(MAV.C_D_0 + MAV.C_D_alpha*alpha_trim + MAV.C_D_delta_e*trim_input.elevator) + dTpdVa/MAV.mass
+    V1_coeff = (MAV.rho*Va_trim*MAV.S_wing/MAV.mass)*(MAV.C_D_0 + MAV.C_D_alpha*alpha_trim + MAV.C_D_delta_e*trim_input.elevator)
+
+    # a_V1 = (MAV.rho*Va_trim*MAV.S_wing/MAV.mass)*(MAV.C_D_0 + MAV.C_D_alpha*alpha_trim + MAV.C_D_delta_e*trim_input.elevator) + dTpdVa/MAV.mass
+    a_V1 = V1_coeff - dTpdVa/MAV.mass
     a_V2 = dTpdDeltaT/MAV.mass
     a_V3 = MAV.gravity*np.cos(theta_trim - alpha_trim)
 
@@ -114,16 +117,52 @@ def compute_ss_model(mav, trim_state, trim_input):
     x_euler = euler_state(trim_state)
     A = df_dx(mav, x_euler, trim_input)
     B = df_du(mav, x_euler, trim_input)
-    print("A: ", A)
-    print("B: ", B)
+    # print("A: ", A)
+    # A_lat0 = [A[4][4], A[4][9], A[4][11], A[4][6], A[4][8]]
+    # A_lat1 = [A[9][4], A[9][9], A[9][11], A[9][6], A[9][8]]
+    # A_lat2 = [A[11][4], A[11][9], A[11][11], A[11][6], A[11][8]]
+    # A_lat3 = [A[6][4], A[6][9], A[6][11], A[6][6], A[6][8]]
+    # A_lat4 = [A[8][4], A[8][9], A[8][11], A[8][6], A[8][8]]
+
+    A_lat0 = [A[4][4], A[4][9], A[4][11], A[4][6], A[4][8]]
+    A_lat1 = [A[9][4], A[9][9], A[9][11], A[9][6], A[9][8]]
+    A_lat2 = [A[11][4], A[11][9], A[11][11], A[11][6], A[11][8]]
+    A_lat3 = [A[6][4], A[6][9], A[6][11], A[6][6], A[6][8]]
+    A_lat4 = [A[8][4], A[8][9], A[8][11], A[8][6], A[8][8]]
+
+
+    A_lon0 = [A[3][3], A[3][5], A[3][10], A[3][7], A[3][2]]
+    A_lon1 = [A[5][3], A[5][5], A[5][10], A[5][7], A[5][2]]
+    A_lon2 = [A[10][3], A[10][5], A[10][10], A[10][7], A[10][2]]
+    A_lon3 = [A[7][3], A[7][5], A[7][10], A[7][7], A[7][2]]
+    A_lon4 = [A[2][3], A[2][5], A[2][10], A[2][7], A[2][2]]
+    
+    # B_lat0 = [B[1][4], B[1][9], B[1][11], B[1][6], B[1][8]]
+    # B_lat1 = [B[2][4], B[2][9], B[2][11], B[2][6], B[2][8]]
+
+    B_lat0 = [B[1][4][0], B[1][9][0], B[1][11][0], B[1][6][0], B[1][8][0]]
+    B_lat1 = [B[2][4][0], B[2][9][0], B[2][11][0], B[2][6][0], B[2][8][0]]
+
+    # B_lon0 = [B[0][3], B[0][5], B[0][10], B[0][7], B[0][2]]
+    # B_lon1 = [B[3][3], B[3][5], B[3][10], B[3][7], B[3][2]]
+
+    B_lon0 = [B[0][3][0], B[0][5][0], B[0][10][0], B[0][7][0], B[0][2][0]]
+    B_lon1 = [B[3][3][0], B[3][5][0], B[3][10][0], B[3][7][0], B[3][2][0]]
+
     # extract longitudinal states (u, w, q, theta, pd) and change pd to h
     # A_lon = [[A[][], ],[],[],[],[]]
-    # A_lon = 0
-    B_lon = 0
+    A_lon = [A_lon0, A_lon1, A_lon2, A_lon3, A_lon4]
+    B_lon = np.transpose([B_lon0, B_lon1])
     # extract lateral states (v, p, r, phi, psi)
     # A_lat = [[A[][], ],[],[],[],[]]
-    A_lat = 0
-    B_lat = 0
+    A_lat = [A_lat0, A_lat1, A_lat2, A_lat3, A_lat4]
+    B_lat = np.transpose([B_lat0, B_lat1])
+
+    print("A_lon: \n", A_lon)
+    print("B_lon: \n", B_lon)
+    print("A_lat: \n", A_lat)
+    print("B_lat: \n", B_lat)
+
     return A_lon, B_lon, A_lat, B_lat
 
 def euler_state(x_quat):
@@ -243,20 +282,21 @@ def df_dx(mav, x_euler, delta):
     x_euler11[11] = x_euler[11] + eps
 
     f = f_euler(mav, x_euler, delta)
-    f_0 = f_euler(mav, x_euler0, delta)
-    f_1 = f_euler(mav, x_euler1, delta)
-    f_2 = f_euler(mav, x_euler2, delta)
-    f_3 = f_euler(mav, x_euler3, delta)
-    f_4 = f_euler(mav, x_euler4, delta)
-    f_5 = f_euler(mav, x_euler5, delta)
-    f_6 = f_euler(mav, x_euler6, delta)
-    f_7 = f_euler(mav, x_euler7, delta)
-    f_8 = f_euler(mav, x_euler8, delta)
-    f_9 = f_euler(mav, x_euler9, delta)
-    f_10 = f_euler(mav, x_euler10, delta)
-    f_11 = f_euler(mav, x_euler11, delta)
+    f_0 = (f_euler(mav, x_euler0, delta) - f)/eps # df/dN
+    f_1 = (f_euler(mav, x_euler1, delta) - f)/eps # df/dE
+    f_2 = (f_euler(mav, x_euler2, delta) - f)/eps # df/dh
+    f_3 = (f_euler(mav, x_euler3, delta) - f)/eps # df/du
+    f_4 = (f_euler(mav, x_euler4, delta) - f)/eps # df/dv
+    f_5 = (f_euler(mav, x_euler5, delta) - f)/eps # df/dw
+    f_6 = (f_euler(mav, x_euler6, delta) - f)/eps # df/dphi
+    f_7 = (f_euler(mav, x_euler7, delta) - f)/eps # df/dtheta
+    f_8 = (f_euler(mav, x_euler8, delta) - f)/eps # df/dpsi
+    f_9 = (f_euler(mav, x_euler9, delta) - f)/eps # df/dp
+    f_10 = (f_euler(mav, x_euler10, delta) - f)/eps # df/dq
+    f_11 = (f_euler(mav, x_euler11, delta) - f)/eps # df/dr
 
-    A = [(f_0 - f)/eps,(f_1 - f)/eps,(f_2 - f)/eps,(f_3 - f)/eps,(f_4 - f)/eps,(f_5 - f)/eps,(f_6- f)/eps,(f_7 - f)/eps,(f_8 - f)/eps,(f_9 - f)/eps, (f_10 - f)/eps, (f_11 - f)/eps]
+    A = [f_0,f_1,f_2,f_3,f_4,f_5,f_6,f_7,f_8,f_9, f_10, f_11]
+    print("A: \n",A)
     return A
 
 
@@ -303,7 +343,6 @@ def dT_dVa(mav, Va, delta_t):
     eps = 0.001
     T_eps, Q_eps = mav._motor_thrust_torque(Va + eps, delta_t)
     T, Q = mav._motor_thrust_torque(Va, delta_t)
-    old_Va = Va
     return (T_eps - T) / eps
 
 def dT_ddelta_t(mav, Va, delta_t):

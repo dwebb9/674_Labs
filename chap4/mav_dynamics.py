@@ -86,7 +86,7 @@ class MavDynamics:
         self._state[9][0] = self._state.item(9)/normE
 
         # update the airspeed, angle of attack, and side slip angles using new state
-        print(self._state[3:6])
+        # print(self._state[3:6])
         self._update_velocity_data(wind)
         # update the message class for the true state
         self._update_true_state()

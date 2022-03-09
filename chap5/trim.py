@@ -7,7 +7,9 @@ compute_trim
 import sys
 sys.path.append('..')
 import numpy as np
+
 from scipy.optimize import minimize
+import parameters.aerosonde_parameters as MAV
 from tools.rotations import Euler2Quaternion
 from message_types.msg_delta import MsgDelta
 
@@ -16,14 +18,14 @@ def compute_trim(mav, Va, gamma):
     e0 = Euler2Quaternion(0., gamma, 0.)
     state0 = np.array([[0],  # pn
                    [0.0],  # pe
-                   [0.0],  # pd
+                   [MAV.down0],  # pd
                    [Va],  # u
                    [0.0],  # v
                    [0.0],  # w
                    [e0.item(0)],  # e0
-                   [0.0],  # e1
-                   [0.0],  # e2
-                   [0.0],  # e3
+                   [e0.item(1)],  # e1
+                   [e0.item(2)],  # e2
+                   [e0.item(3)],  # e3
                    [0.0],  # p
                    [0.0],  # q
                    [0.0]   # r
@@ -31,10 +33,12 @@ def compute_trim(mav, Va, gamma):
     # delta0 = np.array([[0,0,0,0]]).T #MsgDelta()
     delta0 = MsgDelta()
 
-    # delta0.elevator = -0.1248
-    # delta0.aileron = 0.001836
-    # delta0.rudder = -0.0003026
-    # delta0.throttle = 0.6768
+    delta0.elevator = -0.2
+    delta0.aileron = 0.0
+    delta0.rudder = -0.0
+    delta0.throttle = 0.4
+
+
     x0 = np.concatenate((state0, delta0.to_array()), axis=0)
     # define equality constraints
     cons = ({'type': 'eq',
@@ -70,6 +74,7 @@ def compute_trim(mav, Va, gamma):
                           rudder=res.x.item(15),
                           throttle=res.x.item(16))
     trim_input.print()
+    print('trim_state-', trim_state.T)
     return trim_state, trim_input
 
 
@@ -92,7 +97,6 @@ def trim_objective_fun(x, mav, Va, gamma):
                    [x[11]],  # q
                    [x[12]]   # r
                    ])
-    # print("trim state", state)
     delta = MsgDelta(elevator=x.item(13),
     aileron=x.item(14),
     rudder=x.item(15),
