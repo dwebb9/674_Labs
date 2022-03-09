@@ -112,14 +112,16 @@ def compute_tf_model(mav, trim_state, trim_input):
 
 def compute_ss_model(mav, trim_state, trim_input):
     x_euler = euler_state(trim_state)
-    A = f_euler(mav, x_euler, trim_input)
-    B = 0
+    A = df_dx(mav, x_euler, trim_input)
+    B = df_du(mav, x_euler, trim_input)
     print("A: ", A)
     print("B: ", B)
     # extract longitudinal states (u, w, q, theta, pd) and change pd to h
-    A_lon = 0
+    # A_lon = [[A[][], ],[],[],[],[]]
+    # A_lon = 0
     B_lon = 0
     # extract lateral states (v, p, r, phi, psi)
+    # A_lat = [[A[][], ],[],[],[],[]]
     A_lat = 0
     B_lat = 0
     return A_lon, B_lon, A_lat, B_lat
@@ -206,23 +208,94 @@ def f_euler(mav, x_euler, delta):
     # return 12x1 dynamics (as if state were Euler state)
     # compute f at euler_state
     x_quat = quaternion_state(x_euler)
-    print("x_quat: ", x_quat)
-    print("forces: ", mav._forces_moments(delta) )
     f_quat = mav._derivatives(x_quat, mav._forces_moments(delta))
-    print("f_quat: ", f_quat)
     dTeDxq = dTe_dxq(x_euler)
     f_euler_ = dTeDxq@f_quat
     return f_euler_
 
 def df_dx(mav, x_euler, delta):
     # take partial of f_euler with respect to x_euler
-    A = 0
+    eps = 0.001
+    x_euler0 = np.array(x_euler)
+    x_euler1 = np.array(x_euler)
+    x_euler2 = np.array(x_euler)
+    x_euler3 = np.array(x_euler)
+    x_euler4 = np.array(x_euler)
+    x_euler5 = np.array(x_euler)
+    x_euler6 = np.array(x_euler)
+    x_euler7 = np.array(x_euler)
+    x_euler8 = np.array(x_euler)
+    x_euler9 = np.array(x_euler)
+    x_euler10 = np.array(x_euler)
+    x_euler11 = np.array(x_euler)
+
+    x_euler0[0] = x_euler[0] + eps
+    x_euler1[1] = x_euler[1] + eps
+    x_euler2[2] = x_euler[2] + eps
+    x_euler3[3] = x_euler[3] + eps
+    x_euler4[4] = x_euler[4] + eps
+    x_euler5[5] = x_euler[5] + eps
+    x_euler6[6] = x_euler[6] + eps
+    x_euler7[7] = x_euler[7] + eps
+    x_euler8[8] = x_euler[8] + eps
+    x_euler9[9] = x_euler[9] + eps
+    x_euler10[10] = x_euler[10] + eps
+    x_euler11[11] = x_euler[11] + eps
+
+    f = f_euler(mav, x_euler, delta)
+    f_0 = f_euler(mav, x_euler0, delta)
+    f_1 = f_euler(mav, x_euler1, delta)
+    f_2 = f_euler(mav, x_euler2, delta)
+    f_3 = f_euler(mav, x_euler3, delta)
+    f_4 = f_euler(mav, x_euler4, delta)
+    f_5 = f_euler(mav, x_euler5, delta)
+    f_6 = f_euler(mav, x_euler6, delta)
+    f_7 = f_euler(mav, x_euler7, delta)
+    f_8 = f_euler(mav, x_euler8, delta)
+    f_9 = f_euler(mav, x_euler9, delta)
+    f_10 = f_euler(mav, x_euler10, delta)
+    f_11 = f_euler(mav, x_euler11, delta)
+
+    A = [(f_0 - f)/eps,(f_1 - f)/eps,(f_2 - f)/eps,(f_3 - f)/eps,(f_4 - f)/eps,(f_5 - f)/eps,(f_6- f)/eps,(f_7 - f)/eps,(f_8 - f)/eps,(f_9 - f)/eps, (f_10 - f)/eps, (f_11 - f)/eps]
     return A
 
 
 def df_du(mav, x_euler, delta):
     # take partial of f_euler with respect to input
-    B = 0
+    eps = 0.001
+
+    delta0 = MsgDelta()
+    delta1 = MsgDelta()
+    delta2 = MsgDelta()
+    delta3 = MsgDelta()
+
+    delta0.elevator = delta.elevator + eps
+    delta0.aileron = delta.aileron
+    delta0.rudder = delta.rudder
+    delta0.throttle = delta.throttle
+
+    delta1.elevator = delta.elevator
+    delta1.aileron = delta.aileron + eps
+    delta1.rudder = delta.rudder
+    delta1.throttle = delta.throttle
+
+    delta2.elevator = delta.elevator 
+    delta2.aileron = delta.aileron
+    delta2.rudder = delta.rudder + eps
+    delta2.throttle = delta.throttle
+
+    delta3.elevator = delta.elevator
+    delta3.aileron = delta.aileron
+    delta3.rudder = delta.rudder
+    delta3.throttle = delta.throttle + eps
+
+    f = f_euler(mav, x_euler, delta)
+    f0 = f_euler(mav, x_euler, delta0)
+    f1 = f_euler(mav, x_euler, delta1)
+    f2 = f_euler(mav, x_euler, delta2)
+    f3 = f_euler(mav, x_euler, delta3)
+
+    B = [(f0 - f)/eps, (f1 - f)/eps, (f2 - f)/eps, (f3 - f)/eps]
     return B
 
 def dT_dVa(mav, Va, delta_t):
