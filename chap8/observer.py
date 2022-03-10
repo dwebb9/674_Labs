@@ -39,13 +39,13 @@ class Observer:
     def update(self, measurement):
 
         # estimates for p, q, r are low pass filter of gyro minus bias estimate
-        self.estimated_state.p = 
-        self.estimated_state.q = 
-        self.estimated_state.r = 
+        self.estimated_state.p = self.lpf_gyro_x.update(measurement.gyro_x)
+        self.estimated_state.q = self.lpf_gyro_y.update(measurement.gyro_y)
+        self.estimated_state.r = self.lpf_gyro_z.update(measurement.gyro_z)
 
         # invert sensor model to get altitude and airspeed
-        self.estimated_state.altitude = 
-        self.estimated_state.Va = 
+        self.estimated_state.altitude = self.lpf_abs.update(measurement.abs_preasure)/(CTRL.rho*CTRL.gravity)
+        self.estimated_state.Va = np.sqrt(2*self.lpf_diff.update(measurement.diff_pressure)/CTRL.rho)
 
         # estimate phi and theta with simple ekf
         self.attitude_ekf.update(measurement, self.estimated_state)
@@ -70,7 +70,7 @@ class AlphaFilter:
         self.y = y0  # initial condition
 
     def update(self, u):
-        self.y = 
+        self.y = self.alpha*self.y + (1-self.alpha)*u
         return self.y
 
 
@@ -94,11 +94,14 @@ class EkfAttitude:
 
     def f(self, x, measurement, state):
         # system dynamics for propagation model: xdot = f(x, u)
-        p = 
-        q = 
-        r = 
-        G = 
-        f_ = 
+        # x contains (phi, theta), measurements contians (p, q, r, Va)
+        p = measurement[0]
+        q = measurement[1]
+        r = measurement[2]
+        phi = x[0]
+        theta = x[1]
+        G = 0 #? not sure what this is supposed to be for......
+        f_ = [(p + q*np.sin(phi)*np.tan(theta) + r*np.cos(phi)*np.tan(theta)),(q*np.cos(phi) + r*np.sin(phi))]
         return f_
 
     def h(self, x, measurement, state):
