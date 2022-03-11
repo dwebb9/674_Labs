@@ -80,10 +80,10 @@ class EkfAttitude:
         self.Q = 
         self.Q_gyro =
         self.R_accel = 
-        self.N =   # number of prediction step per sample
-        self.xhat =  # initial state: phi, theta
+        self.N = 1  # number of prediction step per sample
+        self.xhat = [0,0]  # initial state: phi, theta
         self.P = 
-        self.Ts = 
+        self.Ts = (SIM.ts_control / self.N)
         self.gate_threshold = #stats.chi2.isf()
 
     def update(self, measurement, state):
@@ -94,51 +94,53 @@ class EkfAttitude:
 
     def f(self, x, measurement, state):
         # system dynamics for propagation model: xdot = f(x, u)
-        # x contains (phi, theta), measurements contians (p, q, r, Va)
-        p = measurement[0]
-        q = measurement[1]
-        r = measurement[2]
+        p = state.p
+        q = state.q
+        r = state.r
         phi = x[0]
         theta = x[1]
         G = 0 #? not sure what this is supposed to be for......
-        f_ = [(p + q*np.sin(phi)*np.tan(theta) + r*np.cos(phi)*np.tan(theta)),(q*np.cos(phi) + r*np.sin(phi))]
+        f_ = [(p + q*np.sin(phi)*np.tan(theta) + r*np.cos(phi)*np.tan(theta)),(q*np.cos(phi) - r*np.sin(phi))]
         return f_
 
     def h(self, x, measurement, state):
         # measurement model y
-        p = 
-        q = 
-        r = 
-        Va = 
-        h_ = 
+        p = state.p
+        q = state.q
+        r = state.r
+        Va = state.Va
+        phi = x[0]
+        theta = x[1]
+        h_ = [(q*Va*np.sin(theta) + CTRL.gravity*np.sin(theta)),(r*Va*np.cos(theta) - p*Va*np.sin(theta) - CTRL.gravity*np.cos(theta*np.sin(phi))),(-q*Va*np.cos(theta) - CTRL.gravity*np.cos(theta)*np.cos(phi))]
         return h_
 
     def propagate_model(self, measurement, state):
         # model propagation
         for i in range(0, self.N):
-
+            Tp = self.Ts/self.N
             # propagate model
-            self.xhat = 
+            self.xhat = self.xhat + Tp*f(self.xhat, measurement, state)
             # compute Jacobian
-            A = #jacobian()
+            A = jacobian(self.f, self.xhat, measurement, state)
 
             # compute G matrix for gyro noise
-            G = 
+            G = 0 # ??????????? NOT SURE WHAT THIS IS FOR??????????????????????????????????????
             # convert to discrete time models
-            A_d = 
+            A_d = np.eye(A.size()) + A*Tp + A@A.T*Tp**2
             # update P with discrete time model
-            self.P = 
+            self.P = A_d@self.P@A_d.T + Tp**2*self.Q
 
     def measurement_update(self, measurement, state):
         # measurement updates
         h = self.h(self.xhat, measurement, state)
         C = jacobian(self.h, self.xhat, measurement, state)
         y = np.array([[measurement.accel_x, measurement.accel_y, measurement.accel_z]]).T
-        S_inv = 
+        S_inv = np.linalg.inv(self.R_accel + C@self.P@C.T )
         if (y-h).T @ S_inv @ (y-h) < self.gate_threshold:
-            L = 
-            self.P = 
-            self.xhat =
+            L = self.P@C.T@S_inv
+            tmp = np.eye(2) - L@C
+            self.P = tmp@self.P@tmp.T +L@self.R_accel@L.T
+            self.xhat = self.xhat + L@(y-h)
             #print('updating')
 
 
@@ -150,7 +152,7 @@ class EkfPosition:
         self.R_pseudo = 
         self.N =   # number of prediction step per sample
         self.Ts = (SIM.ts_control / self.N)
-        self.xhat = 
+        self.xhat = [0,0,0,0,0,0,0]
         self.P = 
         self.gps_n_old = 9999
         self.gps_e_old = 9999
@@ -202,14 +204,15 @@ class EkfPosition:
     def propagate_model(self, measurement, state):
         # model propagation
         for i in range(0, self.N):
+            Tp = self.Ts/self.N
             # propagate model
-            self.xhat = 
+            self.xhat = self.xhat + Tp*f(self.xhat, measurement, state)
             # compute Jacobian
-            A = #jacobian()
+            A = jacobian(self.f, self.xhat, measurement, state)
             # convert to discrete time models
-            A_d = 
+            A_d = np.eye(A.size()) + A*Tp + A@A.T*Tp**2
             # update P with discrete time model
-            self.P = 
+            self.P = A_d@self.P@A_d.T + Tp**2*self.Q
 
     def measurement_update(self, measurement, state):
         # always update based on wind triangle pseudu measurement
