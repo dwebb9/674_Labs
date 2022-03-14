@@ -82,9 +82,9 @@ class EkfAttitude:
         self.R_accel = np.eye(4, 4)
         self.N = 1  # number of prediction step per sample
         self.xhat = [0,0]  # initial state: phi, theta
-        self.P = np.zeros(2,2)
+        self.P = np.zeros((2,2))
         self.Ts = (SIM.ts_control / self.N)
-        # self.gate_threshold = #stats.chi2.isf()
+        self.gate_threshold = 20 #stats.chi2.isf()
 
     def update(self, measurement, state):
         self.propagate_model(measurement, state)
@@ -153,12 +153,12 @@ class EkfPosition:
         self.N = 1  # number of prediction step per sample
         self.Ts = (SIM.ts_control / self.N)
         self.xhat = np.zeros(7)
-        self.P = np.zeros(7,7)
+        self.P = np.zeros((7,7))
         self.gps_n_old = 9999
         self.gps_e_old = 9999
         self.gps_Vg_old = 9999
         self.gps_course_old = 9999
-        self.pseudo_threshold = stats.chi2.isf()
+        self.pseudo_threshold = 100000 #stats.chi2.isf(1)
         self.gps_threshold = 100000 # don't gate GPS
 
     def update(self, measurement, state):
@@ -174,31 +174,40 @@ class EkfPosition:
 
     def f(self, x, measurement, state):
         # system dynamics for propagation model: xdot = f(x, u)
-        Vg = 
-        chi = 
-        psi = 
-        psidot =
-        Vgdot = 
-        f_ = 
+        Vg = x[2]
+        chi = x[3]
+        wn = x[4]
+        we = x[5]
+        psi = x[6]
+
+        q = state.q
+        r = state.r
+        Va = state.Va
+        phi = state.phi
+        theta = state.theta
+        psidot = q*np.sin(phi)/np.cos(theta) + r*np.cos(phi)/np.cos(theta)
+        Vgdot = Va*psidot*(we*np.cos(psi) - wn*np.sin(psi))/Vg
+        f_ = [(Vg*np.cos(chi)),(Vg*np.sin(chi)),Vgdot,(CTRL.gravity*np.tan(phi)*np.cos(chi-psi)/Vg),(0),(0),psidot]
         return f_
 
     def h_gps(self, x, measurement, state):
         # measurement model for gps measurements
-        pn = 
-        pe = 
-        Vg = 
-        chi = 
-        h_ = 
+        pn = x[0]
+        pe = x[1]
+        Vg = x[2]
+        chi = x[3]
+        h_ = [pn, pe, Vg, chi]
         return h_
 
     def h_pseudo(self, x, measurement, state):
         # measurement model for wind triangale pseudo measurement
-        Vg = 
-        chi = 
-        wn = 
-        we = 
-        psi = 
-        h_ = 
+        Vg = x[2]
+        chi = x[3]
+        wn = x[4]
+        we = x[5]
+        psi = x[6]
+        Va = state.Va
+        h_ = [(Va*np.cos(psi) + wn - Vg*np.cos(chi)),(Va*np.sin(psi) + we - Vg*np.sin(chi))]
         return h_
 
     def propagate_model(self, measurement, state):
