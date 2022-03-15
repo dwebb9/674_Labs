@@ -6,6 +6,7 @@ observer
 """
 from operator import xor
 import sys
+from tkinter import S
 import numpy as np
 from scipy import stats
 sys.path.append('..')
@@ -43,6 +44,9 @@ class Observer:
         self.estimated_state.p = self.lpf_gyro_x.update(measurement.gyro_x)
         self.estimated_state.q = self.lpf_gyro_y.update(measurement.gyro_y)
         self.estimated_state.r = self.lpf_gyro_z.update(measurement.gyro_z)
+
+        print("p: ", self.estimated_state.p)
+        print("gyro p: ", measurement.gyro_x)
 
         # invert sensor model to get altitude and airspeed
         self.estimated_state.altitude = self.lpf_abs.update(measurement.abs_pressure)/(CTRL.rho*CTRL.gravity)
@@ -88,6 +92,7 @@ class EkfAttitude:
         self.P = np.zeros((2,2))
         self.Ts = (SIM.ts_control / self.N)
         self.gate_threshold = stats.chi2.isf(0.01, df=3)
+        print("gate threshold: ", self.gate_threshold)
 
     def update(self, measurement, state):
         self.propagate_model(measurement, state)
@@ -103,7 +108,9 @@ class EkfAttitude:
         phi = x[0][0]
         theta = x[1][0]
         G = 0 #? not sure what this is supposed to be for......
-        f_ = np.array([[p + q*np.sin(phi)*np.tan(theta) + r*np.cos(phi)*np.tan(theta)],[q*np.cos(phi) - r*np.sin(phi)]])
+        f_ = np.array([[p + q*np.sin(phi)*np.tan(theta) + r*np.cos(phi)*np.tan(theta)],
+                        [q*np.cos(phi) - r*np.sin(phi)]
+            ])
         return f_
 
     def h(self, x, measurement, state):
@@ -114,7 +121,10 @@ class EkfAttitude:
         Va = state.Va
         phi = x[0][0]
         theta = x[1][0]
-        h_ = np.array([[q*Va*np.sin(theta) + CTRL.gravity*np.sin(theta)],[r*Va*np.cos(theta) - p*Va*np.sin(theta) - CTRL.gravity*np.cos(theta*np.sin(phi))],[-q*Va*np.cos(theta) - CTRL.gravity*np.cos(theta)*np.cos(phi)]])
+        h_ = np.array([[q*Va*np.sin(theta) + CTRL.gravity*np.sin(theta)],
+                        [r*Va*np.cos(theta) - p*Va*np.sin(theta) - CTRL.gravity*np.cos(theta)*np.sin(phi)],
+                        [-q*Va*np.cos(theta) - CTRL.gravity*np.cos(theta)*np.cos(phi)]
+            ])
         return h_
 
     def propagate_model(self, measurement, state):
@@ -123,6 +133,7 @@ class EkfAttitude:
             Tp = self.Ts/self.N
             # propagate model
             self.xhat = self.xhat + [Tp*element for element in self.f(self.xhat, measurement, state)]
+        
             # compute Jacobian
             A = jacobian(self.f, self.xhat, measurement, state)
 
@@ -140,12 +151,17 @@ class EkfAttitude:
         C = jacobian(self.h, self.xhat, measurement, state)
         y = np.array([[measurement.accel_x, measurement.accel_y, measurement.accel_z]]).T
         S_inv = np.linalg.inv(self.R_accel + C@self.P@C.T )
+        # print('Sinv: \n', S_inv)
+        # print("y-h \n", y-h)
+        # print("self.P \n", self.P)
+        # print("if condition: ", (y-h).T @ S_inv @ (y-h))
         if (y-h).T @ S_inv @ (y-h) < self.gate_threshold:
             L = self.P@C.T@S_inv
             iden = np.array([[1, 0], [0,1]])
             tmp = iden - L@C
             self.P = tmp@self.P@tmp.T +L@self.R_accel@L.T
             self.xhat = self.xhat + L@(y-h)
+            # print("measurement xhat", self.xhat)
             
 
 
