@@ -45,8 +45,8 @@ class Observer:
         self.estimated_state.q = self.lpf_gyro_y.update(measurement.gyro_y)
         self.estimated_state.r = self.lpf_gyro_z.update(measurement.gyro_z)
 
-        print("p: ", self.estimated_state.p)
-        print("gyro p: ", measurement.gyro_x)
+        # print("p: ", self.estimated_state.p)
+        # print("gyro p: ", measurement.gyro_x)
 
         # invert sensor model to get altitude and airspeed
         self.estimated_state.altitude = self.lpf_abs.update(measurement.abs_pressure)/(CTRL.rho*CTRL.gravity)
