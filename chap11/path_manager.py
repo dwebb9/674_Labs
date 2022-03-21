@@ -39,19 +39,24 @@ class PathManager:
 
     def initialize_pointers(self):
         if self.num_waypoints >= 3:
-            self.ptr_previous = 
-            self.ptr_current = 
-            self.ptr_next = 
+            self.ptr_previous = 0
+            self.ptr_current = 1
+            self.ptr_next = 2
         else:
             print('Error Path Manager: need at least three waypoints')
 
     def increment_pointers(self):
-        self.ptr_previous = 
-        self.ptr_current = 
-        self.ptr_next = 
+        if self.ptr_next == self.num_waypoints - 1:
+            next = 0
+        else:
+            next = self.ptr_next + 1
+        self.ptr_previous = self.ptr_current
+        self.ptr_current = self.ptr_next
+        self.ptr_next = next
 
     def inHalfSpace(self, pos):
-        if (): #implement code here
+        temp = np.transpose(pos - self.halfspace_r)
+        if (np.dot(temp, self.halfspace_n)) >= 0: 
             return True
         else:
             return False
@@ -113,10 +118,16 @@ class PathManager:
 
     def construct_dubins_circle_start(self, waypoints, dubins_path):
         #update path variables
+        i = 0
+        return i
 
     def construct_dubins_line(self, waypoints, dubins_path):
-        #update path variables
+        #update path variables 
+        i = 0
+        return i
 
     def construct_dubins_circle_end(self, waypoints, dubins_path):
         #update path variables
+        i = 0
+        return i
 
