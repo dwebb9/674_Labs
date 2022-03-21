@@ -10,7 +10,7 @@ from tools.rotations import Euler2Rotation
 
 
 class DrawMav:
-    def __init__(self, state, window):
+    def __init__(self, state, window, color):
         """
         Draw the MAV.
 
@@ -24,6 +24,7 @@ class DrawMav:
             state.psi  # yaw angle
         """
         # get points that define the non-rotated, non-translated mav and the mesh colors
+        self.color = color
         self.mav_points, self.mav_meshColors = self.get_points()
 
         mav_position = np.array([[state.north], [state.east], [-state.altitude]])  # NED coordinates
@@ -121,19 +122,49 @@ class DrawMav:
         blue = np.array([0., 0., 1., 1])
         yellow = np.array([1., 1., 0., 1])
         meshColors = np.empty((13, 3, 4), dtype=np.float32)
-        meshColors[0] = blue
-        meshColors[1] = blue
-        meshColors[2] = blue
-        meshColors[3] = blue
-        meshColors[4] = blue
-        meshColors[5] = blue
-        meshColors[6] = blue
-        meshColors[7] = blue
-        meshColors[8] = red
-        meshColors[9] = red
-        meshColors[10] = red
-        meshColors[11] = red
-        meshColors[12] = red
+        
+        if self.color == 0:
+            meshColors[0] = blue
+            meshColors[1] = blue
+            meshColors[2] = blue
+            meshColors[3] = blue
+            meshColors[4] = blue
+            meshColors[5] = blue
+            meshColors[6] = blue
+            meshColors[7] = blue
+            meshColors[8] = red
+            meshColors[9] = red
+            meshColors[10] = red
+            meshColors[11] = red
+            meshColors[12] = red
+        elif self.color == 1:
+            meshColors[0] = green
+            meshColors[1] = green
+            meshColors[2] = green
+            meshColors[3] = green
+            meshColors[4] = green
+            meshColors[5] = green
+            meshColors[6] = green
+            meshColors[7] = green
+            meshColors[8] = red
+            meshColors[9] = red
+            meshColors[10] = red
+            meshColors[11] = red
+            meshColors[12] = red
+        else:
+            meshColors[0] = red
+            meshColors[1] = red
+            meshColors[2] = red
+            meshColors[3] = red
+            meshColors[4] = red
+            meshColors[5] = red
+            meshColors[6] = red
+            meshColors[7] = red
+            meshColors[8] = yellow
+            meshColors[9] = yellow
+            meshColors[10] = yellow
+            meshColors[11] = yellow
+            meshColors[12] = yellow
 
 
 

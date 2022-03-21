@@ -30,6 +30,12 @@ if VIDEO is True:
 mav = MavDynamics(SIM.ts_simulation)
 delta = MsgDelta()
 
+mav2 = MavDynamics(SIM.ts_simulation)
+delta2 = MsgDelta()
+
+mav3 = MavDynamics(SIM.ts_simulation)
+delta3 = MsgDelta()
+
 # initialize the simulation time
 sim_time = SIM.start_time
 
@@ -45,10 +51,18 @@ while sim_time < SIM.end_time:
     Mz = 0  # 0.1
     forces_moments = np.array([[fx, fy, fz, Mx, My, Mz]]).T
 
+    forces_moments2 = np.array([[fx, 10, fz, 0, My, Mz]]).T
+
+    forces_moments3 = np.array([[fx, fy, 10, 0, My, Mz]]).T
+
     # -------physical system-------------
     mav.update(forces_moments)  # propagate the MAV dynamics
+    mav2.update(forces_moments2)  # propagate the MAV dynamics
+    mav3.update(forces_moments3)
 
     # -------update viewer-------------
+    mav_view.update(mav2.true_state)  # plot body of MAV
+
     mav_view.update(mav.true_state)  # plot body of MAV
     data_view.update(mav.true_state,  # true states
                      mav.true_state,  # estimated states

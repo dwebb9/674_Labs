@@ -34,15 +34,22 @@ class MavViewer():
         self.window.raise_() # bring window to the front
         self.plot_initialized = False # has the mav been plotted yet?
         self.mav_plot = []
+        self.mav_plot2 = []
+        self.mav_plot3 = []
 
-    def update(self, state):
+    def update(self, state, state2, state3):
         # initialize the drawing the first time update() is called
         if not self.plot_initialized:
-            self.mav_plot = DrawMav(state, self.window)
+            self.mav_plot = DrawMav(state, self.window, 0)
+            self.mav_plot2 = DrawMav(state2, self.window, 1)
+            self.mav_plot3 = DrawMav(state3, self.window, 2)
+            
             self.plot_initialized = True
         # else update drawing on all other calls to update()
         else:
             self.mav_plot.update(state)
+            self.mav_plot2.update(state2)
+            self.mav_plot3.update(state3)
         # update the center of the camera view to the mav location
         view_location = Vector(state.east, state.north, state.altitude)  # defined in ENU coordinates
         self.window.opts['center'] = view_location

@@ -17,6 +17,14 @@ from message_types.msg_state import MsgState
 
 # initialize messages
 state = MsgState()  # instantiate state message
+state2 = MsgState()  # instantiate state message
+state3 = MsgState()  # instantiate state message
+
+state2.north = 10
+state2.east = 10
+
+state2.north = 20
+state2.east = 20
 
 # initialize viewers and video
 VIDEO = False  # True==write video, False==don't write video
@@ -46,8 +54,37 @@ while sim_time < SIM.end_time:
     else:
         state.phi += 0.1*SIM.ts_simulation
 
+
+    if sim_time < SIM.end_time/6:
+        state2.north += 20*SIM.ts_simulation
+    elif sim_time < 2*SIM.end_time/6:
+        state2.east += 20*SIM.ts_simulation
+    elif sim_time < 6*SIM.end_time/6:
+        state2.altitude += 10*SIM.ts_simulation
+    elif sim_time < 8*SIM.end_time/6:
+        state2.psi += 0.1*SIM.ts_simulation
+    elif sim_time < 10*SIM.end_time/6:
+        state2.theta += 0.2*SIM.ts_simulation
+    else:
+        state2.phi += 0.2*SIM.ts_simulation
+
+
+    if sim_time < SIM.end_time/6:
+        state3.north += 5*SIM.ts_simulation
+    elif sim_time < 1*SIM.end_time/6:
+        state3.east += 20*SIM.ts_simulation
+    elif sim_time < 1.5*SIM.end_time/6:
+        state3.altitude += 10*SIM.ts_simulation
+    elif sim_time < 2*SIM.end_time/6:
+        state3.psi += 0.05*SIM.ts_simulation
+    elif sim_time < 10*SIM.end_time/6:
+        state3.theta += 0.05*SIM.ts_simulation
+    else:
+        state3.phi += 0.05*SIM.ts_simulation
+
+
     # -------update viewer and video-------------
-    mav_view.update(state)
+    mav_view.update(state, state2, state3)
     if VIDEO is True:
         video.update(sim_time)
 
