@@ -54,9 +54,19 @@ class Autopilot:
 
         # lateral autopilot
         chi_c = wrap (cmd.course_command, state.chi)
+        # print("phi variables")
+
+        # print('course command: ', cmd.course_command)
+        # print("chi_c: ", chi_c)
+        # print("state chi: ", state.chi)
+        courseFromRoll = self.course_from_roll.update(chi_c , state.chi)
+        # print("course from roll = ", courseFromRoll)
+        # print("\n")
+
         phi_c = self.saturate(
-            cmd.phi_feedforward + self.course_from_roll.update(chi_c , state.chi),
-            np.radians(30), np.radians(30))
+            cmd.phi_feedforward + courseFromRoll,
+            -np.radians(30), np.radians(30))
+            
         delta_a = self.roll_from_aileron.update(phi_c, state.phi, state.p)
         delta_r = self.yaw_damper.update(state.r)
 

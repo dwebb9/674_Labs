@@ -40,7 +40,7 @@ path_follower = PathFollower()
 # path definition
 from message_types.msg_path import MsgPath
 path = MsgPath()
-#path.type = 'line'
+# path.type = 'line'
 path.type = 'orbit'
 if path.type == 'line':
     path.line_origin = np.array([[0.0, 0.0, -100.0]]).T
@@ -63,11 +63,13 @@ while sim_time < SIM.end_time:
     estimated_state = observer.update(measurements)  # estimate states from measurements
 
     # -------path follower-------------
-    autopilot_commands = path_follower.update(path, estimated_state)
-    #autopilot_commands = path_follower.update(path, mav.true_state)  # for debugging
+    # autopilot_commands = path_follower.update(path, estimated_state)
+    autopilot_commands = path_follower.update(path, mav.true_state)  # for debugging
 
     # -------autopilot-------------
-    delta, commanded_state = autopilot.update(autopilot_commands, estimated_state)
+    # delta, commanded_state = autopilot.update(autopilot_commands, estimated_state)
+    delta, commanded_state = autopilot.update(autopilot_commands, mav.true_state)
+
 
     # -------physical system-------------
     current_wind = wind.update()  # get the new wind vector

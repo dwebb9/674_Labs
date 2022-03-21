@@ -92,7 +92,6 @@ class EkfAttitude:
         self.P = np.zeros((2,2))
         self.Ts = (SIM.ts_control / self.N)
         self.gate_threshold = stats.chi2.isf(0.01, df=3)
-        print("gate threshold: ", self.gate_threshold)
 
     def update(self, measurement, state):
         self.propagate_model(measurement, state)
