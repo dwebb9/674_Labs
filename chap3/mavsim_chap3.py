@@ -61,9 +61,8 @@ while sim_time < SIM.end_time:
     mav3.update(forces_moments3)
 
     # -------update viewer-------------
-    mav_view.update(mav2.true_state)  # plot body of MAV
+    mav_view.update(mav.true_state, mav2.true_state, mav3.true_state)  # plot body of MAV
 
-    mav_view.update(mav.true_state)  # plot body of MAV
     data_view.update(mav.true_state,  # true states
                      mav.true_state,  # estimated states
                      mav.true_state,  # commanded states
