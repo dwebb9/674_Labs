@@ -10,6 +10,7 @@ sys.path.append('..')
 import numpy as np
 import copy
 import parameters.simulation_parameters as SIM
+import faulthandler; faulthandler.enable()
 
 from chap3.data_viewer import DataViewer
 from chap4.wind_simulation import WindSimulation
@@ -86,9 +87,19 @@ while sim_time < SIM.end_time:
         plot_timer = 0
     plot_timer += SIM.ts_simulation
 
+
+    # path_view.update(mav.true_state, path)  # plot path and MAV
+    # data_view.update(mav.true_state,  # true states
+    #                     estimated_state,  # estimated states
+    #                     commanded_state,  # commanded states
+    #                     delta,  # input to aircraft
+    #                     SIM.ts_simulation)
+    # plot_timer = 0
+
     if VIDEO is True:
         video.update(sim_time)
 
+   
     # -------increment time-------------
     sim_time += SIM.ts_simulation
 
