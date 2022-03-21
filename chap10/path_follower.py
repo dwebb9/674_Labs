@@ -5,6 +5,7 @@ import sys
 sys.path.append('..')
 from message_types.msg_autopilot import MsgAutopilot
 from tools.wrap import wrap
+import parameters.aerosonde_parameters as MAV
 
 
 class PathFollower:
@@ -23,8 +24,8 @@ class PathFollower:
         return self.autopilot_commands
 
     def _follow_straight_line(self, path, state):
-        self.autopilot_commands.airspeed_command = state.Va
         # course command
+        self.autopilot_commands.airspeed_command = MAV.Va0
         chi_q = np.arctan2(path.line_direction.item(1), path.line_direction.item(0))
         chi_q = wrap(chi_q, state.chi)
 
@@ -54,12 +55,13 @@ class PathFollower:
         self.autopilot_commands.phi_feedforward = 0.0
 
     def _follow_orbit(self, path, state):
+
         if path.orbit_direction == 'CW':
             direction = 1.0
         else:
             direction = -1.0
         # airspeed command
-        self.autopilot_commands.airspeed_command = 0
+        self.autopilot_commands.airspeed_command = MAV.Va0
         # distance from orbit center
         d = np.sqrt((state.north - path.orbit_center.item(0))**2 + (state.east - path.orbit_center.item(1))**2)
         # print("d: ", d)
