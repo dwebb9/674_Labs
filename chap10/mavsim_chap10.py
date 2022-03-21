@@ -38,9 +38,20 @@ initial_state = copy.deepcopy(mav.true_state)
 observer = Observer(SIM.ts_simulation, initial_state)
 path_follower = PathFollower()
 
+mav2 = MavDynamics(SIM.ts_simulation)
+autopilot2 = Autopilot(SIM.ts_simulation)
+path_follower2 = PathFollower()
+
+mav3 = MavDynamics(SIM.ts_simulation)
+autopilot3 = Autopilot(SIM.ts_simulation)
+path_follower3 = PathFollower()
+
 # path definition
 from message_types.msg_path import MsgPath
 path = MsgPath()
+path2 = MsgPath()
+path3 = MsgPath()
+
 # path.type = 'line'
 path.type = 'orbit'
 if path.type == 'line':
@@ -51,6 +62,16 @@ elif path.type == 'orbit':
     path.orbit_center = np.array([[0.0, 0.0, -100.0]]).T  # center of the orbit
     path.orbit_radius = 300.0  # radius of the orbit
     path.orbit_direction = 'CW'  # orbit direction: 'CW'==clockwise, 'CCW'==counter clockwise
+
+path2.type = 'orbit'
+path2.orbit_center = np.array([[0.0, 0.0, -60.0]]).T  # center of the orbit
+path2.orbit_radius = 300.0  # radius of the orbit
+path2.orbit_direction = 'CW'  # orbit direction: 'CW'==clockwise, 'CCW'==counter clockwise
+
+path3.type = 'line'
+path3.line_origin = np.array([[0.0, 0.0, -140.0]]).T
+path3.line_direction = np.array([[0.5, 1.0, 0.0]]).T
+path3.line_direction = path3.line_direction / np.linalg.norm(path3.line_direction)
 
 # initialize the simulation time
 sim_time = SIM.start_time
@@ -66,19 +87,24 @@ while sim_time < SIM.end_time:
     # -------path follower-------------
     # autopilot_commands = path_follower.update(path, estimated_state)
     autopilot_commands = path_follower.update(path, mav.true_state)  # for debugging
+    autopilot_commands2 = path_follower2.update(path2, mav2.true_state)
+    autopilot_commands3 = path_follower3.update(path3, mav3.true_state)
 
     # -------autopilot-------------
-    # delta, commanded_state = autopilot.update(autopilot_commands, estimated_state)
+    estimated_state = mav.true_state  # uses true states in the control
     delta, commanded_state = autopilot.update(autopilot_commands, mav.true_state)
-
+    delta2, commanded_state2 = autopilot2.update(autopilot_commands2, mav2.true_state)
+    delta3, commanded_state3 = autopilot3.update(autopilot_commands3, mav3.true_state)
 
     # -------physical system-------------
     current_wind = wind.update()  # get the new wind vector
     mav.update(delta, current_wind)  # propagate the MAV dynamics
+    mav2.update(delta2, current_wind)
+    mav3.update(delta3, current_wind)
 
     # -------update viewer-------------
     if plot_timer > SIM.ts_plotting:
-        path_view.update(mav.true_state, path)  # plot path and MAV
+        path_view.update(mav.true_state, mav2.true_state, mav3.true_state, path, path2, path3)  # plot path and MAV
         data_view.update(mav.true_state,  # true states
                          estimated_state,  # estimated states
                          commanded_state,  # commanded states
@@ -86,15 +112,6 @@ while sim_time < SIM.end_time:
                          SIM.ts_simulation)
         plot_timer = 0
     plot_timer += SIM.ts_simulation
-
-
-    # path_view.update(mav.true_state, path)  # plot path and MAV
-    # data_view.update(mav.true_state,  # true states
-    #                     estimated_state,  # estimated states
-    #                     commanded_state,  # commanded states
-    #                     delta,  # input to aircraft
-    #                     SIM.ts_simulation)
-    # plot_timer = 0
 
     if VIDEO is True:
         video.update(sim_time)

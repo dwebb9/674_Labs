@@ -5,13 +5,14 @@ import sys
 sys.path.append('..')
 from message_types.msg_autopilot import MsgAutopilot
 from tools.wrap import wrap
+import parameters.aerosonde_parameters as MAV
 
 
 class PathFollower:
     def __init__(self):
         self.chi_inf = np.pi/4  # approach angle for large distance from straight-line path
         self.k_path =  0.07  # proportional gain for straight-line path following
-        self.k_orbit =  10.0  # proportional gain for orbit following
+        self.k_orbit =  10  # proportional gain for orbit following
         self.gravity = 9.8
         self.autopilot_commands = MsgAutopilot()  # message sent to autopilot
 
@@ -23,8 +24,8 @@ class PathFollower:
         return self.autopilot_commands
 
     def _follow_straight_line(self, path, state):
-        self.autopilot_commands.airspeed_command = state.Va
         # course command
+        self.autopilot_commands.airspeed_command = MAV.Va0
         chi_q = np.arctan2(path.line_direction.item(1), path.line_direction.item(0))
         chi_q = wrap(chi_q, state.chi)
 
@@ -54,23 +55,25 @@ class PathFollower:
         self.autopilot_commands.phi_feedforward = 0.0
 
     def _follow_orbit(self, path, state):
+
         if path.orbit_direction == 'CW':
             direction = 1.0
         else:
             direction = -1.0
         # airspeed command
-        self.autopilot_commands.airspeed_command = 0
+        self.autopilot_commands.airspeed_command = MAV.Va0
         # distance from orbit center
-        d = np.sqrt((state.north - path.orbit_center.item(0))**2 + (state.east - path.orbit_center.item(2))**2)
+        d = np.sqrt((state.north - path.orbit_center.item(0))**2 + (state.east - path.orbit_center.item(1))**2)
+        # print("d: ", d)
         # compute wrapped version of angular position on orbit
         varphi_temp = np.arctan2((state.east - path.orbit_center.item(1)), (state.north - path.orbit_center.item(0)))
         varphi = wrap(varphi_temp, state.chi)
         # compute normalized orbit error
         orbit_error = (d-path.orbit_radius)/path.orbit_radius
         # course command
-        self.autopilot_commands.course_command = varphi - direction*(np.pi/2.0 + np.arctan(self.k_orbit*orbit_error))
+        self.autopilot_commands.course_command = varphi + direction*(np.pi/2.0 + np.arctan(self.k_orbit*orbit_error))
         # altitude command
-        self.autopilot_commands.altitude_command = path.orbit_center.item(2)
+        self.autopilot_commands.altitude_command = -path.orbit_center.item(2)
         # roll feedforward command
         if orbit_error < 10:
             self.autopilot_commands.phi_feedforward = direction*np.arctan2((state.Vg**2),(self.gravity*path.orbit_radius*np.cos(state.chi - state.psi)))

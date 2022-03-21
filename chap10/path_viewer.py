@@ -31,22 +31,37 @@ class PathViewer:
         self.window.raise_()  # bring window to the front
         self.plot_initialized = False  # has the mav been plotted yet?
         self.mav_plot = []
+        self.mav_plot2 = []
+        self.mav_plot3 = []
+        
         self.path_plot = []
+        self.path_plot2 = []
+        self.path_plot3 = []
 
-    def update(self, state, path):
+    def update(self, state, state2, state3, path, path2, path3):
         blue = np.array([[30, 144, 255, 255]])/255.
         red = np.array([[1., 0., 0., 1]])
         # initialize the drawing the first time update() is called
         if not self.plot_initialized:
-            self.mav_plot = DrawMav(state, self.window)
+            self.mav_plot = DrawMav(state, self.window, 0)
+            self.mav_plot2 = DrawMav(state2, self.window, 1)
+            self.mav_plot3 = DrawMav(state3, self.window, 2)
+
             self.path_plot = DrawPath(path, red, self.window)
+            self.path_plot2 = DrawPath(path2, red, self.window)
+            self.path_plot3 = DrawPath(path3, red, self.window)
+            
             self.plot_initialized = True
             path.plot_updated = True
         # else update drawing on all other calls to update()
         else:
             self.mav_plot.update(state)
+            self.mav_plot2.update(state2)
+            self.mav_plot3.update(state3)
             if not path.plot_updated:
                 self.path_plot.update(path)
+                self.path_plot2.update(path2)
+                self.path_plot3.update(path3)
                 path.plot_updated = True
         # redraw
         self.app.processEvents()
