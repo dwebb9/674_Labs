@@ -10,7 +10,6 @@ sys.path.append('..')
 import numpy as np
 import copy
 import parameters.simulation_parameters as SIM
-import faulthandler; faulthandler.enable()
 
 from chap3.data_viewer import DataViewer
 from chap4.wind_simulation import WindSimulation
@@ -61,7 +60,8 @@ print("Press Command-Q to exit...")
 while sim_time < SIM.end_time:
     # -------observer-------------
     measurements = mav.sensors()  # get sensor measurements
-    estimated_state = observer.update(measurements)  # estimate states from measurements
+    # estimated_state = observer.update(measurements)  # estimate states from measurements
+    estimated_state = mav.true_state
 
     # -------path follower-------------
     # autopilot_commands = path_follower.update(path, estimated_state)
@@ -86,15 +86,6 @@ while sim_time < SIM.end_time:
                          SIM.ts_simulation)
         plot_timer = 0
     plot_timer += SIM.ts_simulation
-
-
-    # path_view.update(mav.true_state, path)  # plot path and MAV
-    # data_view.update(mav.true_state,  # true states
-    #                     estimated_state,  # estimated states
-    #                     commanded_state,  # commanded states
-    #                     delta,  # input to aircraft
-    #                     SIM.ts_simulation)
-    # plot_timer = 0
 
     if VIDEO is True:
         video.update(sim_time)

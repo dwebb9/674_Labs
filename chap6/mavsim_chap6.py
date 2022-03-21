@@ -58,7 +58,7 @@ while sim_time < SIM.end_time:
 
     # -------autopilot commands-------------
     commands.airspeed_command = Va_command.square(sim_time)
-    commands.course_command = course_command.square(sim_time)
+    commands.course_command = course_command.trapezoid(sim_time)
     commands.altitude_command = altitude_command.trapezoid(sim_time)
 
     # -------autopilot-------------
