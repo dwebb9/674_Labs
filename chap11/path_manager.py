@@ -1,7 +1,7 @@
 import numpy as np
 import sys
 sys.path.append('..')
-from chap11.dubins_parameters import DubinsParameters
+# from chap11.dubins_parameters import DubinsParameters
 from message_types.msg_path import MsgPath
 
 
@@ -18,8 +18,9 @@ class PathManager:
         self.halfspace_r = np.inf * np.ones((3,1))
         # state of the manager state machine
         self.manager_state = 1
+        
         self.manager_requests_waypoints = True
-        self.dubins_path = DubinsParameters()
+        # self.dubins_path = DubinsParameters()
 
     def update(self, waypoints, radius, state):
         if waypoints.num_waypoints == 0:
@@ -64,8 +65,15 @@ class PathManager:
     def line_manager(self, waypoints, state):
         mav_pos = np.array([[state.north, state.east, -state.altitude]]).T
         # if the waypoints have changed, update the waypoint pointer
+        if waypoints.flag_waypoints_changed is True:
+            self.initialize_pointers()
+            waypoints.flag_waypoints_changed = False
 
         # state machine for line path
+
+        r = waypoints.ned[self.ptr_previous]
+        qiMin1 = (waypoints[self.ptr_current] - waypoints[self.ptr_previous])/(np.linalg.norm(waypoints[self.ptr_current] - waypoints[self.ptr_previous]))
+        qi = (waypoints[self.ptr_next] - waypoints[self.ptr_current])/(np.linalg.norm(waypoints[self.ptr_next] - waypoints[self.ptr_current]))
 
     def construct_line(self, waypoints):
         previous = waypoints.ned[:, self.ptr_previous:self.ptr_previous+1]
