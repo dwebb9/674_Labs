@@ -143,22 +143,23 @@ class PathManager:
                 self.manager_state = 2
                 self.construct_fillet_circle(waypoints, radius)
                 print("new path")
+                print("current waypoint: ", self.ptr_current)
                 print("path type: ", self.path.type)
                 print("path orbit_center: \n", self.path.orbit_center)
                 print("path orbit_direction: ", self.path.orbit_direction)
                 print("path orbit_radius: ", self.path.orbit_radius)
                 
             elif self.manager_state == 2:
-                print("changed to line")
+                # print("changed to line")
                 self.manager_state = 1
                 self.construct_fillet_line(waypoints, radius)
                 self.increment_pointers()
                 
 
-                print("new path")
-                print("path type: ", self.path.type)
-                print("path line_origin: \n", self.path.line_origin)
-                print("path line_direction: \n", self.path.line_direction)
+                # print("new path")
+                # print("path type: ", self.path.type)
+                # print("path line_origin: \n", self.path.line_origin)
+                # print("path line_direction: \n", self.path.line_direction)
 
 
     def construct_fillet_line(self, waypoints, radius):
@@ -183,9 +184,6 @@ class PathManager:
         # print("line q values")
         # print("qiMin1: \n", qiMin1)
         # print("qi: \n", qi)
-        print("Q: ", Q)
-        print("radius: ", radius)
-        print("line z: \n", z)
        
         self.halfspace_r = z
         self.halfspace_n = qiMin1

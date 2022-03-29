@@ -1,8 +1,72 @@
 R_min:  136.76702299168102
 Press Command-Q to exit...
-Q:  [[2.35619449]]
-radius:  136.76702299168102
-line z: 
- [[ 943.34924419]
- [   0.        ]
+changed to orbit
+new path
+current waypoint:  1
+path type:  orbit
+path orbit_center: 
+ [[ 669.81519821]
+ [ 136.76702299]
  [-100.        ]]
+path orbit_direction:  1.0
+path orbit_radius:  136.76702299168102
+changed to orbit
+new path
+current waypoint:  2
+path type:  orbit
+path orbit_center: 
+ [[ 330.18480179]
+ [ 863.23297701]
+ [-100.        ]]
+path orbit_direction:  -1.0
+path orbit_radius:  136.76702299168102
+changed to orbit
+new path
+current waypoint:  3
+path type:  orbit
+path orbit_center: 
+ [[ 669.81519821]
+ [ 863.23297701]
+ [-100.        ]]
+path orbit_direction:  -1.0
+path orbit_radius:  136.76702299168102
+changed to orbit
+new path
+current waypoint:  0
+path type:  orbit
+path orbit_center: 
+ [[ 330.18480179]
+ [ 136.76702299]
+ [-100.        ]]
+path orbit_direction:  1.0
+path orbit_radius:  136.76702299168102
+changed to orbit
+new path
+current waypoint:  1
+path type:  orbit
+path orbit_center: 
+ [[ 669.81519821]
+ [ 136.76702299]
+ [-100.        ]]
+path orbit_direction:  1.0
+path orbit_radius:  136.76702299168102
+changed to orbit
+new path
+current waypoint:  2
+path type:  orbit
+path orbit_center: 
+ [[ 330.18480179]
+ [ 863.23297701]
+ [-100.        ]]
+path orbit_direction:  -1.0
+path orbit_radius:  136.76702299168102
+changed to orbit
+new path
+current waypoint:  3
+path type:  orbit
+path orbit_center: 
+ [[ 669.81519821]
+ [ 863.23297701]
+ [-100.        ]]
+path orbit_direction:  -1.0
+path orbit_radius:  136.76702299168102
