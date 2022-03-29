@@ -66,77 +66,78 @@ class DubinsParameters:
 
 
 def compute_parameters(ps, chis, pe, chie, R):
-    ell = 
+    ell = np.linalg.norm(ps-pe)
     if ell < 2 * R:
         print('Error in Dubins Parameters: The distance between nodes must be larger than 2R.')
     else:
         # compute start and end circles
-        crs = 
-        cls = 
-        cre = 
-        cle = 
+
+        crs = ps + R*rotz(chis + np.pi/2)[0]
+        cls = ps + R*rotz(chis - np.pi/2)[0]
+        cre = pe + R*rotz(chie + np.pi/2)[0]
+        cle = pe + R*rotz(chie - np.pi/2)[0]
 
         # compute L1
-        
-        L1 = 
+        theta = np.arctan2((cre.item(1) - crs.item(1)), (cre.item(0) - crs.item(0)))
+        L1 = np.linalg.norm(crs - cre) + R*(2*np.pi + (theta - np.pi/2) - (chis - np.pi/2)) + R*(2*np.pi + (chie - np.pi/2) - (theta - np.pi/2))
         # compute L2
 
-        ell = 
-        theta = 
-        theta2 = 
+        ell = np.linalg.norm(crs - cle)
+        theta = np.arctan2((cre.item(1) - crs.item(1)), (cre.item(0) - crs.item(0)))
+        theta2 = 0
         if not np.isreal(theta2):
-            L2 = 
+            L2 = 0
         else:
-            L2 = 
+            L2 = 0
 
         # compute L3
-        ell = 
-        theta = 
-        theta2 = 
+        ell = 0
+        theta = 0 
+        theta2 = 0 
         if not np.isreal(theta2):
-
+            L3 = 0
         else:
-            L3 = 
+            L3 = 0
         # compute L4
-        theta = 
-        L4 = 
+        theta = 0
+        L4 = 0
         # L is the minimum distance
         L = np.min([L1, L2, L3, L4])
         idx = np.argmin([L1, L2, L3, L4])
         if idx == 0:
-            cs = 
-            lams = 
-            ce = 
-            lame = 
-            q1 = 
-            w1 = 
-            w2 = 
+            cs = 0
+            lams = 0
+            ce = 0
+            lame = 0
+            q1 = 0
+            w1 = 0
+            w2 = 0
         elif idx == 1:
-            cs = 
-            lams = 
-            ce = 
-            lame = 
-            q1 = 
-            w1 = 
-            w2 =  
+            cs = 0
+            lams = 0
+            ce = 0
+            lame = 0
+            q1 = 0
+            w1 = 0
+            w2 =  0
         elif idx == 2:
-            cs = 
-            lams = 
-            ce = 
-            lame = 
-            q1 = 
-            w1 = 
-            w2 = 
+            cs = 0
+            lams = 0
+            ce = 0
+            lame = 0
+            q1 = 0
+            w1 = 0
+            w2 = 0
         elif idx == 3:
-            cs = 
-            lams = 
-            ce = 
-            lame = 
-            q1 = 
-            w1 = 
-            w2 =  
-        w3 = 
-        q3 = 
+            cs = 0
+            lams = 0
+            ce = 0
+            lame = 0
+            q1 = 0
+            w1 = 0
+            w2 =  0
+        w3 = 0
+        q3 = 0
 
         return L, cs, lams, ce, lame, w1, q1, w2, w3, q3
 

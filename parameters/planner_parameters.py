@@ -16,7 +16,7 @@ phi_max = np.radians(25)
 
 # minimum turn radius
 R_min = Va0**2 / MAV.gravity / np.tan(phi_max)
-print(R_min)
+print("R_min: ", R_min)
 
 # create random city map
 city_width      = 2000  # the city is of size (width)x(width)
