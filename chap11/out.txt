@@ -1,7 +1,18 @@
 R_min:  136.76702299168102
 Press Command-Q to exit...
+initial line
+path type:  line
+path line_origin: 
+ [[   0.]
+ [   0.]
+ [-100.]]
+path line_direction: 
+ [[1.]
+ [0.]
+ [0.]]
+
+
 changed to orbit
-new path
 current waypoint:  1
 path type:  orbit
 path orbit_center: 
@@ -10,8 +21,21 @@ path orbit_center:
  [-100.        ]]
 path orbit_direction:  1.0
 path orbit_radius:  136.76702299168102
+
+
+changed to line
+path type:  line
+path line_origin: 
+ [[   0.]
+ [   0.]
+ [-100.]]
+path line_direction: 
+ [[1.]
+ [0.]
+ [0.]]
+
+
 changed to orbit
-new path
 current waypoint:  2
 path type:  orbit
 path orbit_center: 
@@ -20,8 +44,21 @@ path orbit_center:
  [-100.        ]]
 path orbit_direction:  -1.0
 path orbit_radius:  136.76702299168102
+
+
+changed to line
+path type:  line
+path line_origin: 
+ [[1000.]
+ [   0.]
+ [-100.]]
+path line_direction: 
+ [[-0.70710678]
+ [ 0.70710678]
+ [ 0.        ]]
+
+
 changed to orbit
-new path
 current waypoint:  3
 path type:  orbit
 path orbit_center: 
@@ -30,8 +67,21 @@ path orbit_center:
  [-100.        ]]
 path orbit_direction:  -1.0
 path orbit_radius:  136.76702299168102
+
+
+changed to line
+path type:  line
+path line_origin: 
+ [[   0.]
+ [1000.]
+ [-100.]]
+path line_direction: 
+ [[1.]
+ [0.]
+ [0.]]
+
+
 changed to orbit
-new path
 current waypoint:  0
 path type:  orbit
 path orbit_center: 
@@ -40,8 +90,21 @@ path orbit_center:
  [-100.        ]]
 path orbit_direction:  1.0
 path orbit_radius:  136.76702299168102
+
+
+changed to line
+path type:  line
+path line_origin: 
+ [[1000.]
+ [1000.]
+ [-100.]]
+path line_direction: 
+ [[-0.70710678]
+ [-0.70710678]
+ [ 0.        ]]
+
+
 changed to orbit
-new path
 current waypoint:  1
 path type:  orbit
 path orbit_center: 
@@ -50,8 +113,21 @@ path orbit_center:
  [-100.        ]]
 path orbit_direction:  1.0
 path orbit_radius:  136.76702299168102
+
+
+changed to line
+path type:  line
+path line_origin: 
+ [[   0.]
+ [   0.]
+ [-100.]]
+path line_direction: 
+ [[1.]
+ [0.]
+ [0.]]
+
+
 changed to orbit
-new path
 current waypoint:  2
 path type:  orbit
 path orbit_center: 
@@ -60,8 +136,21 @@ path orbit_center:
  [-100.        ]]
 path orbit_direction:  -1.0
 path orbit_radius:  136.76702299168102
+
+
+changed to line
+path type:  line
+path line_origin: 
+ [[1000.]
+ [   0.]
+ [-100.]]
+path line_direction: 
+ [[-0.70710678]
+ [ 0.70710678]
+ [ 0.        ]]
+
+
 changed to orbit
-new path
 current waypoint:  3
 path type:  orbit
 path orbit_center: 
@@ -70,3 +159,17 @@ path orbit_center:
  [-100.        ]]
 path orbit_direction:  -1.0
 path orbit_radius:  136.76702299168102
+
+
+changed to line
+path type:  line
+path line_origin: 
+ [[   0.]
+ [1000.]
+ [-100.]]
+path line_direction: 
+ [[1.]
+ [0.]
+ [0.]]
+
+

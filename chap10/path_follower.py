@@ -12,7 +12,7 @@ class PathFollower:
     def __init__(self):
         self.chi_inf = np.pi/4  # approach angle for large distance from straight-line path
         self.k_path =  0.07  # proportional gain for straight-line path following
-        self.k_orbit =  10  # proportional gain for orbit following
+        self.k_orbit =  4.0#10  # proportional gain for orbit following
         self.gravity = 9.8
         self.autopilot_commands = MsgAutopilot()  # message sent to autopilot
 

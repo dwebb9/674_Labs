@@ -2,7 +2,7 @@ from unittest import installHandler
 import numpy as np
 import sys
 sys.path.append('..')
-# from chap11.dubins_parameters import DubinsParameters
+from chap11.dubins_parameters import DubinsParameters
 from message_types.msg_path import MsgPath
 
 
@@ -21,7 +21,7 @@ class PathManager:
         self.manager_state = 1
         
         self.manager_requests_waypoints = True
-        # self.dubins_path = DubinsParameters()
+        self.dubins_path = DubinsParameters()
 
     def update(self, waypoints, radius, state):
         if waypoints.num_waypoints == 0:
@@ -58,16 +58,9 @@ class PathManager:
 
     def inHalfSpace(self, pos):
         temp = np.transpose(pos - self.halfspace_r)
-        # print("inHalfSpace")
-        # print("halfspace r: \n", self.halfspace_r)
-        # print("pos: \n", pos)
-        # print("temp: \n", temp)
-        # print("halfspace n: \n", self.halfspace_n)
         if (np.dot(temp, self.halfspace_n)) >= 0: 
-            # print("in half space")
             return True
         else:
-            # print("not")
             return False
 
     def line_manager(self, waypoints, state):
@@ -139,27 +132,16 @@ class PathManager:
         # state machine for fillet path
         if self.inHalfSpace(mav_pos):
             if self.manager_state == 1:
-                print("changed to orbit")
+                # print("changed to orbit")
                 self.manager_state = 2
                 self.construct_fillet_circle(waypoints, radius)
-                print("new path")
-                print("current waypoint: ", self.ptr_current)
-                print("path type: ", self.path.type)
-                print("path orbit_center: \n", self.path.orbit_center)
-                print("path orbit_direction: ", self.path.orbit_direction)
-                print("path orbit_radius: ", self.path.orbit_radius)
+
                 
             elif self.manager_state == 2:
                 # print("changed to line")
                 self.manager_state = 1
                 self.construct_fillet_line(waypoints, radius)
                 self.increment_pointers()
-                
-
-                # print("new path")
-                # print("path type: ", self.path.type)
-                # print("path line_origin: \n", self.path.line_origin)
-                # print("path line_direction: \n", self.path.line_direction)
 
 
     def construct_fillet_line(self, waypoints, radius):
@@ -235,11 +217,28 @@ class PathManager:
     def dubins_manager(self, waypoints, radius, state):
         mav_pos = np.array([[state.north, state.east, -state.altitude]]).T
         # if the waypoints have changed, update the waypoint pointer
+        if waypoints.flag_waypoints_changed is True: # initialize pointers, update flag, and set halfspace and calulate path
+            self.num_waypoints = waypoints.num_waypoints
+            self.initialize_pointers()
+            waypoints.flag_waypoints_changed = False
+            self.manager_state = 1
+
+            
+
 
         # state machine for dubins path
+        if self.manager_state == 1:
+            flag
+
 
     def construct_dubins_circle_start(self, waypoints, dubins_path):
         #update path variables
+        self.path.type = 'orbit'
+        self.path.airspeed = waypoints.airspeed
+        self.path.orbit_center = dubins_path.center_s
+        self.path.orbit_radius = dubins_path.radius
+        self.path.orbit_direction = dubins_path.dir_s
+
         i = 0
         return i
 

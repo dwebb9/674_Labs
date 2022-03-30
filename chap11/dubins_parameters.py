@@ -79,65 +79,88 @@ def compute_parameters(ps, chis, pe, chie, R):
 
         # compute L1
         theta = np.arctan2((cre.item(1) - crs.item(1)), (cre.item(0) - crs.item(0)))
-        L1 = np.linalg.norm(crs - cre) + R*(2*np.pi + (theta - np.pi/2) - (chis - np.pi/2)) + R*(2*np.pi + (chie - np.pi/2) - (theta - np.pi/2))
+        R1Ang = mod(2*np.pi + mod(theta - np.pi/2) - mod(chis - np.pi/2))
+        R2Ang = mod(2*np.pi + mod(chie - np.pi/2) - mod(theta - np.pi/2))
+        L1 = np.linalg.norm(crs - cre) + R*R1Ang + R*R2Ang
         # compute L2
 
         ell = np.linalg.norm(crs - cle)
-        theta = np.arctan2((cre.item(1) - crs.item(1)), (cre.item(0) - crs.item(0)))
-        theta2 = 0
+        theta = np.arctan2((cle.item(1) - crs.item(1)), (cle.item(0) - crs.item(0)))
+        theta2 = theta - np.pi/2 + np.arcsin(2*R/ell)
+
+        R1Ang = mod(2*np.pi + mod(theta2) - mod(chis - np.pi/2))
+        R2Ang = mod(2*np.pi + mod(theta2 + np.pi) - mod(chie + np.pi/2))
         if not np.isreal(theta2):
-            L2 = 0
+            L2 = np.sqrt(ell**2 - 4*R**2)
         else:
-            L2 = 0
+            L2 = np.sqrt(ell**2 - 4*R**2) + R*R1Ang + R*R2Ang
 
         # compute L3
-        ell = 0
-        theta = 0 
-        theta2 = 0 
+        ell = np.linalg.norm(cls - cre)
+        theta = np.arctan2((cre.item(1) - cls.item(1)), (cre.item(0) - cls.item(0)))
+        theta2 = np.arccos(2*R/ell)
+
+        R1Ang = mod(2*np.pi + mod(chis + np.pi/2) - mod(theta + theta2))
+        R2Ang = mod(2*np.pi + mod(chie - np.pi/2) - mod(theta + theta2 - np.pi))
         if not np.isreal(theta2):
-            L3 = 0
+            L3 = np.sqrt(ell**2 - 4*R**2)
         else:
-            L3 = 0
+            L3 = np.sqrt(ell**2 - 4*R**2) + R*R1Ang + R*R2Ang
         # compute L4
-        theta = 0
-        L4 = 0
+        theta = np.arctan2((cle.item(1) - cls.item(1)), (cle.item(0) - cls.item(0)))
+
+        R1Ang = mod(2*np.pi + mod(chis + np.pi/2) - mod(theta  + np.pi/2))
+        R2Ang = mod(2*np.pi + mod(theta + np.pi/2) - mod(chie + np.pi/2))
+
+        L4 = np.linalg.norm(cls - cle) + R*R1Ang + R*R2Ang
         # L is the minimum distance
         L = np.min([L1, L2, L3, L4])
         idx = np.argmin([L1, L2, L3, L4])
+        e1 = np.array([1,0,0,0])
         if idx == 0:
-            cs = 0
-            lams = 0
-            ce = 0
-            lame = 0
-            q1 = 0
-            w1 = 0
-            w2 = 0
+            cs = crs
+            lams = 1
+            ce = cre
+            lame = 1
+            q1 = (ce - cs)/np.linalg.norm((ce - cs))
+            w1 = cs + R*rotz(-np.pi/2)*q1
+            w2 = ce + R*rotz(-np.pi/2)*q1
         elif idx == 1:
-            cs = 0
-            lams = 0
-            ce = 0
-            lame = 0
-            q1 = 0
-            w1 = 0
-            w2 =  0
+            cs = crs
+            lams = 1
+            ce = cle
+            lame = -1
+
+            ell = np.linalg.norm(ce - cs)
+            theta = np.arctan2((ce.item(1) - cs.item(1)), (ce.item(0) - cs.item(0)))
+            theta2 = theta - np.pi/2 + np.arcsin(2*R/ell)
+
+            q1 = rotz(theta2 + np.pi/2)*e1
+            w1 = cs + R*rotz(theta2)*e1
+            w2 = ce + R*rotz(theta2 + np.pi)*e1
         elif idx == 2:
-            cs = 0
-            lams = 0
-            ce = 0
-            lame = 0
-            q1 = 0
-            w1 = 0
-            w2 = 0
+            cs = cls
+            lams = -1   
+            ce = cre
+            lame = 1    
+
+            ell = np.linalg.norm(ce - cs)
+            theta = np.arctan2((ce.item(1) - cs.item(1)), (ce.item(0) - cs.item(0)))
+            theta2 = np.arccos(2*R/ell)
+
+            q1 = rotz(theta + theta2 - np.pi/2)*e1
+            w1 = cs + R*rotz(theta + theta2)*e1
+            w2 = ce + R*rotz(theta + theta2 - np.pi)*e1
         elif idx == 3:
-            cs = 0
-            lams = 0
-            ce = 0
-            lame = 0
-            q1 = 0
-            w1 = 0
-            w2 =  0
-        w3 = 0
-        q3 = 0
+            cs = cls
+            lams = -1   
+            ce = cle
+            lame = -1
+            q1 = (ce - cs)/np.linalg.norm((ce - cs))
+            w1 = cs + R*rotz(np.pi/2)*q1
+            w2 = ce + R*rotz(np.pi/2)*q1
+        w3 = pe
+        q3 = rotz(chie)*e1
 
         return L, cs, lams, ce, lame, w1, q1, w2, w3, q3
 
