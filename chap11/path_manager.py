@@ -23,6 +23,8 @@ class PathManager:
         self.manager_requests_waypoints = True
         self.dubins_path = DubinsParameters()
 
+        self.ts_itt = 0
+
     def update(self, waypoints, radius, state):
         if waypoints.num_waypoints == 0:
             self.manager_requests_waypoints = True
@@ -76,8 +78,11 @@ class PathManager:
 
         # state machine for line path
         if self.inHalfSpace(mav_pos): #incriment pointers, update half space, and update path. 
+            # print("updated line ")
             self.increment_pointers()
+            # print("current pointer: ", self.ptr_current)
             self.construct_line(waypoints)
+            self.path.plot_updated = False
 
 
     def construct_line(self, waypoints):
@@ -130,18 +135,23 @@ class PathManager:
             self.construct_fillet_line(waypoints, radius)
 
         # state machine for fillet path
-        if self.inHalfSpace(mav_pos):
-            if self.manager_state == 1:
-                # print("changed to orbit")
+        # if self.inHalfSpace(mav_pos):
+        if self.manager_state == 1:
+            # print("changed to orbit")
+            # print("current: ", self.ptr_current)
+            self.construct_fillet_line(waypoints, radius)
+            self.path.plot_updated = False
+            if self.inHalfSpace(mav_pos):
                 self.manager_state = 2
-                self.construct_fillet_circle(waypoints, radius)
 
-                
-            elif self.manager_state == 2:
-                # print("changed to line")
+        elif self.manager_state == 2:
+            # print("changed to line")
+            self.construct_fillet_circle(waypoints, radius)
+            self.path.plot_updated = False
+            if self.inHalfSpace(mav_pos):
                 self.manager_state = 1
-                self.construct_fillet_line(waypoints, radius)
                 self.increment_pointers()
+
 
 
     def construct_fillet_line(self, waypoints, radius):
@@ -203,6 +213,11 @@ class PathManager:
         # print("qiMin1: \n", qiMin1)
         # print("qi: \n", qi)
 
+        if direction >= 1:
+            dir = 'CW'
+        else: 
+            dir = 'CCW'
+
         self.halfspace_r = z
         self.halfspace_n = qi
 
@@ -210,7 +225,7 @@ class PathManager:
         self.path.type = 'orbit'
         self.path.airspeed = waypoints.airspeed
         self.path.orbit_center = c
-        self.path.orbit_direction = direction
+        self.path.orbit_direction = dir
         self.path.orbit_radius = radius
          #update path variables
 
@@ -223,13 +238,42 @@ class PathManager:
             waypoints.flag_waypoints_changed = False
             self.manager_state = 1
 
-            
+        previous = waypoints.ned[:, self.ptr_previous:self.ptr_previous+1]
+        current = waypoints.ned[:, self.ptr_current:self.ptr_current+1]
+        next = waypoints.ned[:, self.ptr_next:self.ptr_next+1]
 
+        chiprev = state.chi
+        chicurrent =  np.arctan2((next.item(1) - current.item(1)), (next.item(0) - current.item(0)))
+
+        self.dubins_path.update(previous, chiprev, current, chicurrent, radius)
 
         # state machine for dubins path
         if self.manager_state == 1:
-            flag
-
+            self.construct_dubins_circle_start(waypoints, self.dubins_path)
+            if self.inHalfSpace(mav_pos):
+                self.manager_state = 2
+                self.halfspace_n = -self.halfspace_n
+                self.path.plot_updated = False
+        elif self.manager_state == 2:
+            if self.inHalfSpace(mav_pos):
+                self.manager_state = 3
+                self.path.plot_updated = False
+        elif self.manager_state == 3:
+            self.construct_dubins_line(waypoints, self.dubins_path)
+            if self.inHalfSpace(mav_pos):
+                self.manager_state = 4
+                self.path.plot_updated = False
+        elif self.manager_state == 4:
+            self.construct_dubins_circle_end(waypoints, self.dubins_path)
+            if self.inHalfSpace(mav_pos):
+                self.manager_state = 5
+                self.halfspace_n = -self.halfspace_n
+                self.path.plot_updated = False
+        elif self.manager_state == 5:
+            if self.inHalfSpace(mav_pos):
+                self.manager_state = 1
+                self.increment_pointers()
+                self.path.plot_updated = False
 
     def construct_dubins_circle_start(self, waypoints, dubins_path):
         #update path variables
@@ -239,16 +283,38 @@ class PathManager:
         self.path.orbit_radius = dubins_path.radius
         self.path.orbit_direction = dubins_path.dir_s
 
+        self.halfspace_n = -dubins_path.n1
+        self.halfspace_r = dubins_path.r1
+
+
         i = 0
         return i
 
     def construct_dubins_line(self, waypoints, dubins_path):
         #update path variables 
+        self.path.type = 'line'
+        self.path.airspeed = waypoints.airspeed
+        self.path.line_origin = dubins_path.r1
+        self.path.line_direction = dubins_path.n1
+
+        self.halfspace_n = -dubins_path.n1
+        self.halfspace_r = dubins_path.r2
+
         i = 0
         return i
 
     def construct_dubins_circle_end(self, waypoints, dubins_path):
         #update path variables
+
+        self.path.type = 'orbit'
+        self.path.airspeed = waypoints.airspeed
+        self.path.orbit_center = dubins_path.center_e
+        self.path.orbit_radius = dubins_path.radius
+        self.path.orbit_direction = dubins_path.dir_e
+
+        self.halfspace_n = -dubins_path.n3
+        self.halfspace_r = dubins_path.r3
+
         i = 0
         return i
 

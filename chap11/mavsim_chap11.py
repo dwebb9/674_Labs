@@ -40,12 +40,13 @@ observer = Observer(SIM.ts_simulation, initial_state)
 path_follower = PathFollower()
 path_manager = PathManager()
 
+
 # waypoint definition
 from message_types.msg_waypoints import MsgWaypoints
 waypoints = MsgWaypoints()
 # waypoints.type = 'straight_line'
 waypoints.type = 'fillet'
-#waypoints.type = 'dubins'
+# waypoints.type = 'dubins'
 Va = PLAN.Va0
 waypoints.add(np.array([[0, 0, -100]]).T, Va, np.radians(0), np.inf, 0, 0)
 waypoints.add(np.array([[1000, 0, -100]]).T, Va, np.radians(45), np.inf, 0, 0)

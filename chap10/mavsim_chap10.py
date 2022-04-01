@@ -49,7 +49,7 @@ if path.type == 'line':
 elif path.type == 'orbit':
     path.orbit_center = np.array([[0.0, 0.0, -100.0]]).T  # center of the orbit
     path.orbit_radius = 136.0#300.0  # radius of the orbit
-    path.orbit_direction = 'CW'  # orbit direction: 'CW'==clockwise, 'CCW'==counter clockwise
+    path.orbit_direction = 'CCW'  # orbit direction: 'CW'==clockwise, 'CCW'==counter clockwise
 
 # initialize the simulation time
 sim_time = SIM.start_time
