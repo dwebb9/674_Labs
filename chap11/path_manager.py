@@ -242,11 +242,10 @@ class PathManager:
         current = waypoints.ned[:, self.ptr_current:self.ptr_current+1]
         next = waypoints.ned[:, self.ptr_next:self.ptr_next+1]
 
-        chiprev = state.chi
-        chicurrent =  np.arctan2((next.item(1) - current.item(1)), (next.item(0) - current.item(0)))
+        chis = waypoints.course
 
-        self.dubins_path.update(previous, chiprev, current, chicurrent, radius)
-
+        self.dubins_path.update(previous, chis[self.ptr_previous], current, chis[self.ptr_current], radius)
+        print("dubins state: ", self.manager_state)
         # state machine for dubins path
         if self.manager_state == 1:
             self.construct_dubins_circle_start(waypoints, self.dubins_path)
@@ -281,7 +280,14 @@ class PathManager:
         self.path.airspeed = waypoints.airspeed
         self.path.orbit_center = dubins_path.center_s
         self.path.orbit_radius = dubins_path.radius
-        self.path.orbit_direction = dubins_path.dir_s
+
+        if dubins_path.dir_s >=1:
+            dir = 'CW'
+        else:
+            dir = 'CWW'
+
+
+        self.path.orbit_direction = dir
 
         self.halfspace_n = -dubins_path.n1
         self.halfspace_r = dubins_path.r1
@@ -297,7 +303,7 @@ class PathManager:
         self.path.line_origin = dubins_path.r1
         self.path.line_direction = dubins_path.n1
 
-        self.halfspace_n = -dubins_path.n1
+        self.halfspace_n = dubins_path.n1
         self.halfspace_r = dubins_path.r2
 
         i = 0
@@ -310,7 +316,15 @@ class PathManager:
         self.path.airspeed = waypoints.airspeed
         self.path.orbit_center = dubins_path.center_e
         self.path.orbit_radius = dubins_path.radius
-        self.path.orbit_direction = dubins_path.dir_e
+
+
+        if dubins_path.dir_e >=1:
+            dir = 'CW'
+        else:
+            dir = 'CWW'
+
+
+        self.path.orbit_direction = dir
 
         self.halfspace_n = -dubins_path.n3
         self.halfspace_r = dubins_path.r3
