@@ -6,6 +6,7 @@
 #         4/3/2019 - Brady Moon
 #         4/11/2019 - RWB
 #         3/31/2020 - RWB
+from tracemalloc import start
 import numpy as np
 from message_types.msg_waypoints import MsgWaypoints
 from chap11.draw_waypoints import DrawWaypoints
@@ -26,12 +27,16 @@ class RRTStraightLine:
         #tree.type = 'straight_line'
         tree.type = 'fillet'
         # add the start pose to the tree
-        
+        tree.add(start_pose)
+
         # check to see if start_pose connects directly to end_pose
+        if end_pose in tree.ned:
+            print("ERROR: end path is already connected to start path")
+        else:
+            # find path with minimum cost to end_node
+            waypoints = find_minimum_path()
+            # waypoints = #smooth_path()
        
-        # find path with minimum cost to end_node
-        waypoints_not_smooth = #find_minimum_path()
-        waypoints = #smooth_path()
         return waypoints
 
     def extend_tree(self, tree, end_pose, Va, world_map):
