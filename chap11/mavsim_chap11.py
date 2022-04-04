@@ -40,17 +40,44 @@ observer = Observer(SIM.ts_simulation, initial_state)
 path_follower = PathFollower()
 path_manager = PathManager()
 
+mav2 = MavDynamics(SIM.ts_simulation)
+autopilot2 = Autopilot(SIM.ts_simulation)
+path_follower2 = PathFollower()
+path_manager2 = PathManager()
+
+
+mav3 = MavDynamics(SIM.ts_simulation)
+autopilot3 = Autopilot(SIM.ts_simulation)
+path_follower3 = PathFollower()
+path_manager3 = PathManager()
+
+
 # waypoint definition
 from message_types.msg_waypoints import MsgWaypoints
 waypoints = MsgWaypoints()
+waypoints2 = MsgWaypoints()
+waypoints3 = MsgWaypoints()
+
 waypoints.type = 'straight_line'
-#waypoints.type = 'fillet'
-#waypoints.type = 'dubins'
+waypoints2.type = 'fillet'
+waypoints3.type = 'dubins'
+
+
 Va = PLAN.Va0
-waypoints.add(np.array([[0, 0, -100]]).T, Va, np.radians(0), np.inf, 0, 0)
-waypoints.add(np.array([[1000, 0, -100]]).T, Va, np.radians(45), np.inf, 0, 0)
-waypoints.add(np.array([[0, 1000, -100]]).T, Va, np.radians(45), np.inf, 0, 0)
-waypoints.add(np.array([[1000, 1000, -100]]).T, Va, np.radians(-135), np.inf, 0, 0)
+waypoints.add(np.array([[0, 0, -150]]).T, Va, np.radians(0), np.inf, 0, 0)
+waypoints.add(np.array([[1000, 0, -150]]).T, Va, np.radians(45), np.inf, 0, 0)
+waypoints.add(np.array([[0, 1000, -150]]).T, Va, np.radians(45), np.inf, 0, 0)
+waypoints.add(np.array([[1000, 1000, -150]]).T, Va, np.radians(-135), np.inf, 0, 0)
+
+waypoints2.add(np.array([[0, 0, -100]]).T, Va, np.radians(0), np.inf, 0, 0)
+waypoints2.add(np.array([[1000, 0, -100]]).T, Va, np.radians(45), np.inf, 0, 0)
+waypoints2.add(np.array([[0, 1000, -100]]).T, Va, np.radians(45), np.inf, 0, 0)
+waypoints2.add(np.array([[1000, 1000, -100]]).T, Va, np.radians(-135), np.inf, 0, 0)
+
+waypoints3.add(np.array([[0, 0, -50]]).T, Va, np.radians(0), np.inf, 0, 0)
+waypoints3.add(np.array([[1000, 0, -50]]).T, Va, np.radians(45), np.inf, 0, 0)
+waypoints3.add(np.array([[0, 1000, -50]]).T, Va, np.radians(45), np.inf, 0, 0)
+waypoints3.add(np.array([[1000, 1000, -50]]).T, Va, np.radians(-135), np.inf, 0, 0)
 
 
 # initialize the simulation time
@@ -65,21 +92,31 @@ while sim_time < SIM.end_time:
     estimated_state = observer.update(measurements)  # estimate states from measurements
 
     # -------path manager-------------
-    path = path_manager.update(waypoints, PLAN.R_min, estimated_state)
+    path = path_manager.update(waypoints, PLAN.R_min, mav.true_state)
+    path2 = path_manager2.update(waypoints2, PLAN.R_min, mav2.true_state)
+    path3 = path_manager3.update(waypoints3, PLAN.R_min, mav3.true_state)
 
     # -------path follower-------------
-    autopilot_commands = path_follower.update(path, estimated_state)
+    # autopilot_commands = path_follower.update(path, estimated_state)
+    autopilot_commands = path_follower.update(path, mav.true_state)  # for debugging
+    autopilot_commands2 = path_follower2.update(path2, mav2.true_state)
+    autopilot_commands3 = path_follower3.update(path3, mav3.true_state)
 
     # -------autopilot-------------
-    delta, commanded_state = autopilot.update(autopilot_commands, estimated_state)
+    estimated_state = mav.true_state  # uses true states in the control
+    delta, commanded_state = autopilot.update(autopilot_commands, mav.true_state)
+    delta2, commanded_state2 = autopilot2.update(autopilot_commands2, mav2.true_state)
+    delta3, commanded_state3 = autopilot3.update(autopilot_commands3, mav3.true_state)
 
     # -------physical system-------------
     current_wind = wind.update()  # get the new wind vector
     mav.update(delta, current_wind)  # propagate the MAV dynamics
+    mav2.update(delta2, current_wind)
+    mav3.update(delta3, current_wind)
 
     # -------update viewer-------------
     if plot_timer > SIM.ts_plotting:
-        waypoint_view.update(mav.true_state, path, waypoints)  # plot path and MAV
+        waypoint_view.update(mav.true_state, mav2.true_state, mav3.true_state, path, path2, path3, waypoints, waypoints2, waypoints3)  # plot path and MAV
         data_view.update(mav.true_state,  # true states
                          estimated_state,  # estimated states
                          commanded_state,  # commanded states

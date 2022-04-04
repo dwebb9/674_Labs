@@ -31,26 +31,64 @@ class WaypointViewer:
         self.window.raise_()  # bring window to the front
         self.plot_initialized = False  # has the mav been plotted yet?
         self.mav_plot = []
-        self.path_plot = []
-        self.waypoint_plot = []
+        self.mav_plot2 = []
+        self.mav_plot3 = []
 
-    def update(self, state, path, waypoints):
+        self.path_plot = []
+        self.path_plot2 = []
+        self.path_plot3 = []
+
+        self.waypoint_plot = []
+        self.waypoint_plot2 = []
+        self.waypoint_plot3 = []
+
+    def update(self, state, state2, state3, path, path2, path3, waypoints, waypoints2, waypoints3):
         blue = np.array([[30, 144, 255, 255]])/255.
         red = np.array([[1., 0., 0., 1]])
         # initialize the drawing the first time update() is called
         if not self.plot_initialized:
-            self.mav_plot = DrawMav(state, self.window)
+            self.mav_plot = DrawMav(state, self.window, 0)
+            self.mav_plot2 = DrawMav(state2, self.window, 1)
+            self.mav_plot3 = DrawMav(state3, self.window, 2)
+
             self.waypoint_plot = DrawWaypoints(waypoints, path.orbit_radius, blue, self.window)
+            self.waypoint_plot2 = DrawWaypoints(waypoints2, path2.orbit_radius, blue, self.window)
+            self.waypoint_plot3 = DrawWaypoints(waypoints3, path3.orbit_radius, blue, self.window)
+
             self.path_plot = DrawPath(path, red, self.window)
+            self.path_plot2 = DrawPath(path2, red, self.window)
+            self.path_plot3 = DrawPath(path3, red, self.window)
+
             self.plot_initialized = True
         # else update drawing on all other calls to update()
         else:
             self.mav_plot.update(state)
+            self.mav_plot2.update(state2)
+            self.mav_plot3.update(state3)
+
             if waypoints.flag_waypoints_changed:
                 self.waypoint_plot.update(waypoints)
                 waypoints.flag_waypoints_changed = False
+
+            if waypoints2.flag_waypoints_changed:
+                self.waypoint_plot2.update(waypoints2)
+                waypoints2.flag_waypoints_changed = False
+
+            if waypoints3.flag_waypoints_changed:
+                self.waypoint_plot3.update(waypoints3)
+                waypoints3.flag_waypoints_changed = False
+
+            
             if not path.plot_updated:  # only plot path when it changes
                 self.path_plot.update(path, red)
                 path.plot_updated = True
+
+            if not path2.plot_updated:  # only plot path when it changes
+                self.path_plot2.update(path2, red)
+                path2.plot_updated = True
+
+            if not path3.plot_updated:  # only plot path when it changes
+                self.path_plot3.update(path3, red)
+                path3.plot_updated = True
         # redraw
         self.app.processEvents()
