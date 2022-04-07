@@ -198,14 +198,27 @@ class PathManager:
         # else:
         #     next = 
 
+        
+
         previous = waypoints.ned[:, self.ptr_previous:self.ptr_previous+1]
         current = waypoints.ned[:, self.ptr_current:self.ptr_current+1]
         next = waypoints.ned[:, self.ptr_next:self.ptr_next+1]
+
+        print("previous: ", previous)
+        print("current: ", current)
+        print("next: ", next)
 
         qiMin1 = (current - previous)/(np.linalg.norm(current - previous))
         qi = (next - current)/(np.linalg.norm(next - current))
         Q = np.arccos(np.transpose(-qiMin1)@qi)
         z = current + (radius/np.tan(Q/2))*qi
+
+        print("current: ", current)
+        print("Q: ", Q)
+        print("qiMin1: ", qiMin1)
+        print("qi: ", qi)
+        print("linalg diff: ", np.linalg.norm(qiMin1 - qi))
+
         c = current - (radius/np.sin(Q/2))*(qiMin1 - qi)/np.linalg.norm(qiMin1 - qi)
         direction = np.sign(qiMin1.item(0)*qi.item(1) - qiMin1.item(1)*qi.item(0))
 
