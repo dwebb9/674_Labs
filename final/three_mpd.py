@@ -12,7 +12,7 @@ from chap7.mav_dynamics import MavDynamics
 from chap8.observer import Observer
 from chap10.path_follower import PathFollower
 from chap11.path_manager import PathManager
-from chap11.waypoint_viewer import WaypointViewer
+from final.mdp_viewer import WaypointViewer
 
 #MPD path calculation ----------------------------------------------------------------------------------------------
 goal = 100
@@ -132,7 +132,7 @@ print("path3: ", path3)
 
 # initialize the visualization
 VIDEO = False  # True==write video, False==don't write video
-waypoint_view = WaypointViewer()  # initialize the viewer
+waypoint_view = WaypointViewer(origonal_map)  # initialize the viewer
 data_view = DataViewer()  # initialize view of data plots
 if VIDEO is True:
     from chap2.video_writer import VideoWriter
@@ -182,18 +182,9 @@ for node in path:
 for node in path2:
     waypoints2.add(np.array([[150 + node[0]*300, 150 + node[1]*300, -100]]).T, Va, np.radians(0), np.inf, 0, 0)
 
-# for node in path3:
-#     waypoints3.add(np.array([[150 + node[0]*300, 150 + node[1]*300, -100]]).T, Va, np.radians(0), np.inf, 0, 0)
+for node in path3:
+    waypoints3.add(np.array([[150 + node[0]*300, 150 + node[1]*300, -100]]).T, Va, np.radians(0), np.inf, 0, 0)
 
-# waypoints2.add(np.array([[0, 0, -100]]).T, Va, np.radians(0), np.inf, 0, 0)
-# waypoints2.add(np.array([[1000, 0, -100]]).T, Va, np.radians(45), np.inf, 0, 0)
-# waypoints2.add(np.array([[0, 1000, -100]]).T, Va, np.radians(45), np.inf, 0, 0)
-# waypoints2.add(np.array([[1000, 1000, -100]]).T, Va, np.radians(-135), np.inf, 0, 0)
-
-waypoints3.add(np.array([[0, 0, -50]]).T, Va, np.radians(0), np.inf, 0, 0)
-waypoints3.add(np.array([[1000, 0, -50]]).T, Va, np.radians(45), np.inf, 0, 0)
-waypoints3.add(np.array([[0, 1000, -50]]).T, Va, np.radians(45), np.inf, 0, 0)
-waypoints3.add(np.array([[1000, 1000, -50]]).T, Va, np.radians(-135), np.inf, 0, 0)
 
 # initialize the simulation time
 sim_time = SIM.start_time
@@ -203,7 +194,6 @@ plot_timer = 0
 print("Press Command-Q to exit...")
 while sim_time < SIM.end_time:
     # -------observer-------------
-    print("ran update")
     measurements = mav.sensors()  # get sensor measurements
     estimated_state = observer.update(measurements)  # estimate states from measurements
 
