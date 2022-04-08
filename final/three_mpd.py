@@ -103,6 +103,7 @@ def pathCalc(map, initial_state, path):
             
 
 utility(initial_state)
+print("utility map: \n", utilites)
 pathCalc(map, initial_state, path)
 
 print("map: \n", map)
