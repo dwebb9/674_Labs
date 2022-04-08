@@ -51,7 +51,7 @@ class PathManager:
 
     def increment_pointers(self):
         if self.ptr_next == self.num_waypoints - 1:
-            next = 0
+            next = 9999
         else:
             next = self.ptr_next + 1
         self.ptr_previous = self.ptr_current
@@ -134,22 +134,32 @@ class PathManager:
             self.manager_state = 1
             self.construct_fillet_line(waypoints, radius)
 
+        if self.ptr_current == 9999:
+            # print("it's the final count down!!!")
+            self.manager_state = 3
+
+        # print("manager state: ", self.manager_state)
         # state machine for fillet path
-        # if self.inHalfSpace(mav_pos):
         if self.manager_state == 1:
-            # print("changed to orbit")
-            # print("current: ", self.ptr_current)
             self.construct_fillet_line(waypoints, radius)
             self.path.plot_updated = False
             if self.inHalfSpace(mav_pos):
                 self.manager_state = 2
+                if self.ptr_next == 9999:
+                    self.increment_pointers()
+
 
         elif self.manager_state == 2:
-            # print("changed to line")
-
+            if self.ptr_current == 9999:
+                current = waypoints.ned[:, self.num_waypoints:self.num_waypoints+1]
+            else:
+                current = waypoints.ned[:, self.ptr_current:self.ptr_current+1]
+            if self.ptr_next == 9999:
+                next = waypoints.ned[:, self.num_waypoints:self.num_waypoints+1]
+            else:
+                next = waypoints.ned[:, self.ptr_next:self.ptr_next+1]
             previous = waypoints.ned[:, self.ptr_previous:self.ptr_previous+1]
-            current = waypoints.ned[:, self.ptr_current:self.ptr_current+1]
-            next = waypoints.ned[:, self.ptr_next:self.ptr_next+1]
+        
             qiMin1 = (current - previous)/(np.linalg.norm(current - previous))
             qi = (next - current)/(np.linalg.norm(next - current))
 
@@ -162,22 +172,22 @@ class PathManager:
             if self.inHalfSpace(mav_pos):
                 self.manager_state = 1
                 self.increment_pointers()
-
+        elif self.manager_state ==3:
+            self.construct_final_fillet_circle(waypoints, radius)
 
 
     def construct_fillet_line(self, waypoints, radius):
-        # if self.ptr_current == 9999:
-        #     current = 
-        # else:
-        #     current = 
-        # if self.ptr_next == 9999:
-        #     next = 
-        # else:
-        #     next = 
+        if self.ptr_current == 9999:
+            current = waypoints.ned[:, self.num_waypoints-1:self.num_waypoints]
+        else:
+            current = waypoints.ned[:, self.ptr_current:self.ptr_current+1]
+        if self.ptr_next == 9999:
+            next = waypoints.ned[:, 0:1]
+        else:
+            next = waypoints.ned[:, self.ptr_next:self.ptr_next+1]
+
         #update path variables
         previous = waypoints.ned[:, self.ptr_previous:self.ptr_previous+1]
-        current = waypoints.ned[:, self.ptr_current:self.ptr_current+1]
-        next = waypoints.ned[:, self.ptr_next:self.ptr_next+1]
 
         qiMin1 = (current - previous)/(np.linalg.norm(current - previous))
         qi = (next - current)/(np.linalg.norm(next - current))
@@ -200,20 +210,20 @@ class PathManager:
 
     def construct_fillet_circle(self, waypoints, radius):
         previous = waypoints.ned[:, self.ptr_previous:self.ptr_previous+1]
-        # if self.ptr_current == 9999:
-        #     current = 
-        # else:
-        #     current = 
-        # if self.ptr_next == 9999:
-        #     next = 
-        # else:
-        #     next = 
+        if self.ptr_current == 9999:
+            current = waypoints.ned[:, self.num_waypoints-1:self.num_waypoints]
+        else:
+            current = waypoints.ned[:, self.ptr_current:self.ptr_current+1]
+        if self.ptr_next == 9999:
+            next = waypoints.ned[:, 0:1]
+        else:
+            next = waypoints.ned[:, self.ptr_next:self.ptr_next+1]
 
         
 
         previous = waypoints.ned[:, self.ptr_previous:self.ptr_previous+1]
-        current = waypoints.ned[:, self.ptr_current:self.ptr_current+1]
-        next = waypoints.ned[:, self.ptr_next:self.ptr_next+1]
+        # current = waypoints.ned[:, self.ptr_current:self.ptr_current+1]
+        # next = waypoints.ned[:, self.ptr_next:self.ptr_next+1]
 
         # print("previous: ", previous)
         # print("current: ", current)
@@ -252,6 +262,18 @@ class PathManager:
         self.path.orbit_direction = dir
         self.path.orbit_radius = radius
          #update path variables
+
+
+    def construct_final_fillet_circle(self, waypoints, radius):
+
+        dir = 'CW'
+        c = waypoints.ned[:, self.num_waypoints-1:self.num_waypoints]
+        self.path.type = 'orbit'
+        self.path.airspeed = waypoints.airspeed
+        self.path.orbit_center = c
+        self.path.orbit_direction = dir
+        self.path.orbit_radius = radius
+
 
     def dubins_manager(self, waypoints, radius, state):
         mav_pos = np.array([[state.north, state.east, -state.altitude]]).T

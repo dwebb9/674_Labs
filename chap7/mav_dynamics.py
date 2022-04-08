@@ -22,7 +22,7 @@ import parameters.sensor_parameters as SENSOR
 from tools.rotations import Quaternion2Rotation, Quaternion2Euler, Euler2Rotation
 
 class MavDynamics:
-    def __init__(self, Ts, initN=MAV.north0, initE=MAV.east0, initD=MAV.down0):
+    def __init__(self, Ts, initN=MAV.north0, initE=MAV.east0, initD=MAV.down0, alpha=0):
         self._ts_simulation = Ts
         # set initial states based on parameter file
         # _state is the 13x1 internal state of the aircraft that is being propagated:
@@ -48,7 +48,7 @@ class MavDynamics:
         # store forces to avoid recalculation in the sensors function
         self._forces = np.array([[0.], [0.], [0.]])
         self._Va = MAV.u0
-        self._alpha = 0
+        self._alpha = alpha
         self._beta = 0
         # initialize true_state message
         self.true_state = MsgState()

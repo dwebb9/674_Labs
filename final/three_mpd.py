@@ -27,7 +27,7 @@ utilites_calc = np.array([[0.0,0.0,0.0,0.0,0.0,0.0],[0.0,0.0,0.0,0.0,0.0,0.0],[0
 
 initial_state = [0,0]
 init2 = [0,5]
-init3 = [5,5]
+init3 = [2,5]
 
 print("agent 1 init: ", initial_state)
 print("agent 2 init: ", initial_state)
@@ -149,13 +149,15 @@ observer = Observer(SIM.ts_simulation, initial_state)
 path_follower = PathFollower()
 path_manager = PathManager()
 
-mav2 = MavDynamics(SIM.ts_simulation, initN=(init2[0]*300+150), initE=(init2[1]*300+150))
+offset = 300
+
+mav2 = MavDynamics(SIM.ts_simulation, initN=(init2[0]*300+150), initE=(init2[1]*300+150+offset))
 autopilot2 = Autopilot(SIM.ts_simulation)
 path_follower2 = PathFollower()
 path_manager2 = PathManager()
 
 
-mav3 = MavDynamics(SIM.ts_simulation, initN=(init3[0]*300+150), initE=(init3[1]*300+150))
+mav3 = MavDynamics(SIM.ts_simulation, initN=(init3[0]*300+150), initE=(init3[1]*300+150), alpha=np.pi/2)
 autopilot3 = Autopilot(SIM.ts_simulation)
 path_follower3 = PathFollower()
 path_manager3 = PathManager()
