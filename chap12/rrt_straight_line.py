@@ -6,6 +6,7 @@
 #         4/3/2019 - Brady Moon
 #         4/11/2019 - RWB
 #         3/31/2020 - RWB
+from audioop import reverse
 import re
 from tracemalloc import start
 import numpy as np
@@ -119,12 +120,35 @@ def find_minimum_path(tree, end_pose, world_map, segment_length):
             last = end_pose
         
     print(connecting_nodes)
-    return tree
+    # return tree
+
+    path = []
 
     # find shortest path
+    last_node = itt
+    # for i in connecting_nodes:
+    #     if i[1] == last_node:
+    #         path.append(last_node)
+    #         last_node = i[0]
+    #         break
+
+    while not last_node == 0:
+        for i in connecting_nodes:
+            if i[1] == last_node:
+                path.append(last_node)
+                last_node = i[0]
+    
+    path.reverse()
+    print("path: \n", path)
 
     # construct waypoint path
     waypoints = MsgWaypoints()
+    waypoints.type = 'fillet'
+
+    for i in path:
+        waypoints.add(tree.ned[:,i:i+1])
+
+    print("waypoints: \n", waypoints.ned)
    
     return waypoints
 
