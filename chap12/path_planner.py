@@ -9,7 +9,7 @@ import sys
 sys.path.append('..')
 from message_types.msg_waypoints import MsgWaypoints
 from chap12.rrt_straight_line import RRTStraightLine
-from chap12.rrt_dubins import RRTDubins
+# from chap12.rrt_dubins import RRTDubins
 
 
 class PathPlanner:
@@ -17,7 +17,7 @@ class PathPlanner:
         # waypoints definition
         self.waypoints = MsgWaypoints()
         self.rrt_straight_line = RRTStraightLine()
-        self.rrt_dubins = RRTDubins()
+        # self.rrt_dubins = RRTDubins()
 
     def update(self, world_map, state, radius):
         print('planning...')
@@ -75,4 +75,5 @@ class PathPlanner:
             print("Error in Path Planner: Undefined planner type.")
         self.waypoints.plot_updated = False
         print('...done planning.')
+        
         return self.waypoints

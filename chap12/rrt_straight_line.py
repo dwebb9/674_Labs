@@ -38,6 +38,7 @@ class RRTStraightLine:
         else:
             # find path with minimum cost to end_node
             waypoints = find_minimum_path(tree, end_pose, world_map, self.segment_length)
+            print("waypoints: \n", waypoints.ned)
             # waypoints = #smooth_path()
        
         return waypoints
@@ -94,16 +95,30 @@ def find_minimum_path(tree, end_pose, world_map, segment_length):
     # # construct lowest cost path order
     # path = 
 
+    itt = 0
 
-    while end_pose not in tree.ned:
+    last = tree.ned[:,0:1]
+
+    while  not (distance(last, end_pose) <= segment_length):
+    # while  not itt==100:
+
         p = random_pose(world_map, tree.ned[:,0:1])
-        v_star = closest_node(tree.ned[:,0:1])
+        v_star, itt_star = closest_node(p, tree)
         v_plus = segment_length*(p - v_star)/np.linalg.norm(p - v_star)
-        if not collision(v_star, v_plus, world_map):
-            tree.add(v_plus)
-        if not collision(v_plus, end_pose, world_map) and (distance(v_plus, end_pose) <= segment_length):
-            tree.add(end_pose)
 
+        if not collision(v_star, v_plus, world_map):
+            tree.add(v_plus + v_star)
+            itt += 1
+            connecting_nodes.append([itt_star, itt])
+            last = v_plus + v_star
+            
+        if (distance(v_plus + v_star, end_pose) <= segment_length) and not collision(v_plus, end_pose, world_map):
+            tree.add(end_pose)
+            itt += 1
+            connecting_nodes.append([itt_star, itt])
+            last = end_pose
+        
+    print(connecting_nodes)
     return tree
 
     # find shortest path
@@ -115,23 +130,36 @@ def find_minimum_path(tree, end_pose, world_map, segment_length):
 
 
 def closest_node(p, tree):
+    # print("clossest node ts: ")
+    # print("tree: \n", tree.ned)
+    # print("p: \n", p)
+
     tree_itt = 0
     close = tree.ned[:,tree_itt:tree_itt + 1]
-    dist = np.linalg.norm(p, close)
+    dist = np.linalg.norm(p - close)
+
+    # print("starting dist: ", dist)
 
     for i in range(1, tree.num_waypoints - 1):
-        temp = np.linalg.norm(p, tree.ned[:,i:i + 1])
+        temp = np.linalg.norm(p - tree.ned[:,i:i + 1])
         if temp < dist: 
             dist = temp
             close = tree.ned[:,i:i + 1]
-    
-    return close
+            tree_itt = i
+    #     print("new dist: ", temp)
+    # print("end clossest node \n")
+    return close, tree_itt
 
 def random_pose(world_map, pd):
     # generate a random pose
-    xy = np.random[1,2]
+    xy = np.random.rand(2)
 
-    pose = np.array([[xy[0]%world_map.city_width], [xy[1]%world_map.city_width], [pd.item(2)]])
+    # print("random pose stuff")
+    # print(xy)
+    # print(xy[1])
+
+    pose = np.array([[xy[0]*world_map.city_width], [xy[1]*world_map.city_width], [pd.item(2)]])
+    # print("end random pose \n")
     return pose
 
 
@@ -144,13 +172,26 @@ def distance(start_pose, end_pose):
 def collision(start_pose, end_pose, world_map):
     # check to see of path from start_pose to end_pose colliding with map
     num_points = 10
-    points = points_along_path(start_pose, end_pose)
+    points = points_along_path(start_pose, end_pose, num_points)
+    width = world_map.building_width
 
     collision_flag = False
 
-    for i in range(0, num_points)
-        if points[]
+    for i in range(0, num_points):
+        for j in range(0, world_map.num_city_blocks):
+            n = world_map.building_north[0,j]
+            e = world_map.building_east[0,j]
+            if (points[i][0] > n-width and points[i][0] < n+width) and (points[i][1] > e-width and points[i][1] < e+width):
+                if points[i][2] < world_map.building_height[0,j]:
+                    collision_flag = True
 
+    end = start_pose + end_pose
+
+    if end.item(0) > 2000 or end.item(0) < 0 or end.item(1) > 2000 or end.item(1) < 0:
+        collision_flag = True
+
+    # if collision_flag:
+    #     print("collided")
     return collision_flag
 
 
@@ -179,10 +220,10 @@ def draw_tree(tree, color, window):
 
 def points_along_path(start_pose, end_pose, N):
     # returns points along path separated by Del
-    deltaN = (start_pose.item(0) - end_pose.item(0))/N
-    deltaE = (start_pose.item(1) - end_pose.item(1))/N
+    deltaN = (start_pose.item(0) + end_pose.item(0))/N
+    deltaE = (start_pose.item(1) + end_pose.item(1))/N
 
-    points = np.zeros(N, 3)
+    points = np.zeros((N, 3))
 
     for i in range(0, N):
         points[i][0] = start_pose.item(0) + i*deltaN
