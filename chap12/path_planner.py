@@ -9,7 +9,7 @@ import sys
 sys.path.append('..')
 from message_types.msg_waypoints import MsgWaypoints
 from chap12.rrt_straight_line import RRTStraightLine
-# from chap12.rrt_dubins import RRTDubins
+from chap12.rrt_dubins import RRTDubins
 
 
 class PathPlanner:
@@ -17,15 +17,15 @@ class PathPlanner:
         # waypoints definition
         self.waypoints = MsgWaypoints()
         self.rrt_straight_line = RRTStraightLine()
-        # self.rrt_dubins = RRTDubins()
+        self.rrt_dubins = RRTDubins()
 
     def update(self, world_map, state, radius):
         print('planning...')
         # this flag is set for one time step to signal a redraw in the viewer
         # planner_flag = 'simple_straight'  # return simple waypoint path
         # planner_flag = 'simple_dubins'  # return simple dubins waypoint path
-        planner_flag = 'rrt_straight'  # plan path through city using straight-line RRT
-        #planner_flag = 'rrt_dubins'  # plan path through city using dubins RRT
+        # planner_flag = 'rrt_straight'  # plan path through city using straight-line RRT
+        planner_flag = 'rrt_dubins'  # plan path through city using dubins RRT
         if planner_flag == 'simple_straight':
             Va = 25
             self.waypoints.type = 'fillet'

@@ -245,7 +245,7 @@ class PathManager:
         chis = waypoints.course
 
         self.dubins_path.update(previous, chis[self.ptr_previous], current, chis[self.ptr_current], radius)
-        print("dubins state: ", self.manager_state)
+        # print("dubins state: ", self.manager_state)
         # state machine for dubins path
         if self.manager_state == 1:
             self.construct_dubins_circle_start(waypoints, self.dubins_path)
