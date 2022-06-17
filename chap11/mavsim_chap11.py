@@ -59,8 +59,8 @@ waypoints2 = MsgWaypoints()
 waypoints3 = MsgWaypoints()
 
 waypoints.type = 'fillet'
-waypoints2.type = 'fillet'
-waypoints3.type = 'fillet'
+waypoints2.type = 'dubins'
+waypoints3.type = 'straight_line'
 
 
 Va = PLAN.Va0

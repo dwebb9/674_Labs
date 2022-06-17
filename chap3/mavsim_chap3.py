@@ -49,7 +49,7 @@ while sim_time < SIM.end_time:
     Mx = 0.1  # 0.1
     My = 0  # 0.1
     Mz = 0  # 0.1
-    forces_moments = np.array([[fx, fy, fz, Mx, My, Mz]]).T
+    forces_moments = np.array([[10, fy, fz, 0, My, Mz]]).T
 
     forces_moments2 = np.array([[fx, 10, fz, 0, My, Mz]]).T
 

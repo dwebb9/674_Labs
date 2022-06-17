@@ -144,24 +144,26 @@ if VIDEO is True:
 # initialize elements of the architecture
 wind = WindSimulation(SIM.ts_simulation)
 mav = MavDynamics(SIM.ts_simulation)
-autopilot = Autopilot(SIM.ts_simulation)
 initial_state = copy.deepcopy(mav.true_state)
-observer = Observer(SIM.ts_simulation, initial_state)
+offset = 300
+
+
 path_follower = PathFollower()
 path_manager = PathManager()
-
-offset = 300
+autopilot = Autopilot(SIM.ts_simulation)
+observer = Observer(SIM.ts_simulation, initial_state)
 
 mav2 = MavDynamics(SIM.ts_simulation, initN=(init2[0]*300+150), initE=(init2[1]*300+150+offset))
 autopilot2 = Autopilot(SIM.ts_simulation)
 path_follower2 = PathFollower()
 path_manager2 = PathManager()
-
+observer2 = Observer(SIM.ts_simulation, initial_state)
 
 mav3 = MavDynamics(SIM.ts_simulation, initN=(init3[0]*300+150), initE=(init3[1]*300+150), alpha=np.pi/2)
 autopilot3 = Autopilot(SIM.ts_simulation)
 path_follower3 = PathFollower()
 path_manager3 = PathManager()
+observer3 = Observer(SIM.ts_simulation, initial_state)
 
 
 # waypoint definition
